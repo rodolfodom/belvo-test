@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 import { User } from '../users/user.entity';
+import type { TransactionType } from './create-transaction.dto';
 
 @Entity()
 export class Transaction {
@@ -16,7 +17,7 @@ export class Transaction {
   amount: number;
 
   @Column()
-  type: string;
+  type: TransactionType;
 
   @Column()
   category: string;
