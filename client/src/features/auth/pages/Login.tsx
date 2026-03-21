@@ -2,11 +2,16 @@ import { Box, TextField, Button, Typography, Link, ThemeProvider, Alert} from "@
 import { lightTheme } from "../../../app/theme";
 import { useState } from "react";
 import { login } from "../services/login";
+import { useNavigate } from "react-router";
+import { useAuth } from "../hooks/useAuth";
+
 export function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const navigate = useNavigate();
+    const { setAuthData } = useAuth();
 
     const handleLogin = async () => {
         setIsLoading(true);
@@ -18,8 +23,8 @@ export function LoginPage() {
                 setError(errorData.message || "Login failed. Please check your credentials and try again.");
             } else {
                 response.json().then(data => {
-                    const { accessToken } = data;
-                    localStorage.setItem("accessToken", accessToken);
+                    setAuthData(data);
+                    navigate("/dashboard");
                 });
             }
         } catch(apiError) {

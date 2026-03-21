@@ -1,12 +1,14 @@
 import {
   IsString,
   IsNumber,
-  IsISO8601,
   IsIn,
   Validate,
+  Matches,
   ValidationArguments,
   ValidatorConstraint,
   ValidatorConstraintInterface,
+  registerDecorator,
+  ValidationOptions,
 } from 'class-validator';
 
 export type TransactionType = 'outflow' | 'inflow';
@@ -36,6 +38,33 @@ export class AmountTypeMatch implements ValidatorConstraintInterface {
   }
 }
 
+// Validador personalizado para fecha igual o anterior a hoy
+export function IsPastOrToday(validationOptions?: ValidationOptions) {
+  return function (object: object, propertyName: string) {
+    registerDecorator({
+      name: 'isPastOrToday',
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      validator: {
+        validate(value: any) {
+          if (typeof value !== 'string') return false;
+          // Espera formato YYYY-MM-DD
+          const date = new Date(value + 'T00:00:00');
+          const now = new Date();
+          // Ignorar hora, comparar solo fecha
+          date.setHours(0, 0, 0, 0);
+          now.setHours(0, 0, 0, 0);
+          return date <= now;
+        },
+        defaultMessage() {
+          return 'date must be today or in the past';
+        },
+      },
+    });
+  };
+}
+
 export class CreateTransactionDto {
   @IsString()
   account: string;
@@ -50,6 +79,9 @@ export class CreateTransactionDto {
   @IsString()
   category: string;
 
-  @IsISO8601()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, {
+    message: 'date must be in format YYYY-MM-DD',
+  })
+  @IsPastOrToday({ message: 'date must be today or in the past' })
   date: string;
 }

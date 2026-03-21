@@ -6,12 +6,14 @@ import { BrowserRouter, Route, Routes } from 'react-router';
 import { AuthLayout } from '../features/auth/layouts/AuthLayout.tsx';
 import { SignUpPage } from '../features/auth/pages/SignUp.tsx';
 import '../styles/index.css';
-import { ThemeProvider, CssBaseline } from '@mui/material';
-import { darkTheme } from './theme';
+import { CssBaseline } from '@mui/material';
+import { DashboardPage } from '../features/Dashboard/pages/dashboardPage.tsx';
+import { DashboardLayout } from '../features/Dashboard/layout/DashboardLayout.tsx';
+import { AppProviders } from './providers.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ThemeProvider theme={darkTheme}>
+    <AppProviders>
       <CssBaseline />
       <BrowserRouter>
         <Routes>
@@ -19,8 +21,11 @@ createRoot(document.getElementById('root')!).render(
             <Route index element={<LoginPage />} />
             <Route path="/signup" element={<SignUpPage />} />
           </Route>
+          <Route path='/dashboard' element={<DashboardLayout />}>
+            <Route index element={<DashboardPage />} />
+          </Route>
         </Routes>
       </BrowserRouter>
-    </ThemeProvider>
+    </AppProviders>
   </StrictMode>,
 )
