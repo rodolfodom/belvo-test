@@ -1,17 +1,3 @@
-node_modules/
-dist/
-.env
-.env.*
-coverage/
-*.log
-prisma/migrations/
-prisma/dev.db
-prisma/dev.db-journal
-test-results/
-build/
-.DS_Store
-/.vscode/
-*.db
 # Logs
 logs
 *.log
