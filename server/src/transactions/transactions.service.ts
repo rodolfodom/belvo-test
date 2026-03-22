@@ -24,4 +24,8 @@ export class TransactionService {
     transaction.user = user;
     return this.transactionRepository.save(transaction);
   }
+
+  async findAllByUser(user: User): Promise<Transaction[]> {
+    return this.transactionRepository.find({ where: { user } });
+  }
 }
