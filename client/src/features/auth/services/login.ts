@@ -1,7 +1,5 @@
-const API_URL = import.meta.env.VITE_API_URL;
-
 export async function login(email: string, password: string) {
-    const response = await fetch(`${API_URL}/auth/login`, {
+    const response = await fetch(`api/auth/login`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
