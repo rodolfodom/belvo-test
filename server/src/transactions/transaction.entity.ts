@@ -1,12 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryColumn, ManyToOne } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import { User } from '../users/user.entity';
 import type { TransactionType } from './create-transaction.dto';
 
 @Entity()
 export class Transaction {
-  @PrimaryGeneratedColumn()
-  reference: number;
+  @PrimaryColumn()
+  reference: string;
 
   @Column()
   account: string;

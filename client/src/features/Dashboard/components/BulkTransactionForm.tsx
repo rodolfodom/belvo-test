@@ -21,6 +21,7 @@ import { DateField } from "../../../common/components/DateField";
 import { createTransactions } from "../../transactions/services/createTransactions";
 
 type RowData = {
+    reference: string;
     account: string;
     type: string;
     category: string;
@@ -29,6 +30,7 @@ type RowData = {
 };
 
 type RowErrors = {
+    reference?: string;
     account?: string;
     type?: string;
     category?: string;
@@ -37,6 +39,7 @@ type RowErrors = {
 };
 
 const emptyRow = (): RowData => ({
+    reference: "",
     account: "",
     type: "",
     category: "",
@@ -46,6 +49,7 @@ const emptyRow = (): RowData => ({
 
 function validateRow(row: RowData): RowErrors {
     const errors: RowErrors = {};
+    if (!row.reference.trim()) errors.reference = "Required";
     if (!row.account.trim()) errors.account = "Required";
     if (!row.type) errors.type = "Required";
     if (!row.category.trim()) errors.category = "Required";
@@ -109,6 +113,7 @@ export function BulkTransactionForm({
         setError(null);
         try {
             const payload = rows.map((r) => ({
+                reference: r.reference,
                 account: r.account,
                 type: r.type,
                 category: r.category,
@@ -116,6 +121,11 @@ export function BulkTransactionForm({
                 date: r.date!.format("YYYY-MM-DD"),
             }));
             const response = await createTransactions(payload);
+            if (response.status === 409) {
+                const body = await response.json();
+                setError(body?.message ?? "One or more transactions already exist");
+                return;
+            }
             if (!response.ok) {
                 throw new Error("Failed to create transactions");
             }
@@ -184,8 +194,17 @@ export function BulkTransactionForm({
                         >
                             {/* Fields: two rows */}
                             <Box sx={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
-                                {/* Row 1: account, type, category */}
+                                {/* Row 1: reference, account, type, category */}
                                 <Box sx={{ display: "flex", gap: 1 }}>
+                                    <TextField
+                                        label="Reference"
+                                        size="small"
+                                        value={row.reference}
+                                        error={!!rowErrors[index]?.reference}
+                                        helperText={rowErrors[index]?.reference}
+                                        onChange={(e) => updateRow(index, "reference", e.target.value)}
+                                        sx={{ flex: 1 }}
+                                    />
                                     <TextField
                                         label="Account"
                                         size="small"

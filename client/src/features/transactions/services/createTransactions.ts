@@ -1,4 +1,5 @@
 type TransactionPayload = {
+    reference: string;
     account: string;
     type: string;
     category: string;

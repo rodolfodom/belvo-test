@@ -1,4 +1,4 @@
-export async function createTransaction(account: string, type: string, category: string, amount: number, date: string) {
+export async function createTransaction(reference: string, account: string, type: string, category: string, amount: number, date: string) {
     if(type === "outflow" && amount > 0) {
         amount = -amount;
     }
@@ -8,7 +8,7 @@ export async function createTransaction(account: string, type: string, category:
             "Content-Type": "application/json",
             "Authorization": `Bearer ${localStorage.getItem("accessToken")}`,
         },
-        body: JSON.stringify({ account, type, category, amount, date }),
+        body: JSON.stringify({ reference, account, type, category, amount, date }),
     });
     return response;
 }

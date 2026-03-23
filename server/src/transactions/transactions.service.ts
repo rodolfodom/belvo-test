@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Transaction } from './transaction.entity';
 import { CreateTransactionDto } from './create-transaction.dto';
 import { User } from 'src/users/user.entity';
@@ -16,7 +16,14 @@ export class TransactionService {
     transactionData: CreateTransactionDto,
     user: User,
   ): Promise<Transaction> {
-    // Convertir date string a Date
+    const existing = await this.transactionRepository.findOneBy({
+      reference: transactionData.reference,
+    });
+    if (existing) {
+      throw new ConflictException(
+        `Transaction with reference '${transactionData.reference}' already exists`,
+      );
+    }
     const transaction = this.transactionRepository.create({
       ...transactionData,
       date: new Date(transactionData.date),
@@ -29,6 +36,21 @@ export class TransactionService {
     transactionsData: CreateTransactionDto[],
     user: User,
   ): Promise<Transaction[]> {
+    const references = transactionsData.map((d) => d.reference);
+    if (new Set(references).size !== references.length) {
+      throw new ConflictException(
+        'The request contains duplicate transaction references',
+      );
+    }
+    const existing = await this.transactionRepository.findBy({
+      reference: In(references),
+    });
+    if (existing.length > 0) {
+      const duplicates = existing.map((t) => t.reference).join(', ');
+      throw new ConflictException(
+        `Transactions already exist with references: ${duplicates}`,
+      );
+    }
     const transactions = transactionsData.map((data) => {
       const transaction = this.transactionRepository.create({
         ...data,

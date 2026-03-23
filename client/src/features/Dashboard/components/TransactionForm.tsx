@@ -7,6 +7,7 @@ import { DateField } from '../../../common/components/DateField';
 import { createTransaction } from "../../transactions/services/createTransaction";
 
 type FormErrors = {
+    reference?: string;
     account?: string;
     type?: string;
     category?: string;
@@ -32,8 +33,9 @@ export function TransactionForm({ open, onClose, onSuccess }: { open: boolean; o
         setFormErrors((prev) => ({ ...prev, [field]: undefined }));
     };
 
-    const validate = (account: string, type: string, category: string, amount: string, dateValue: string | null): FormErrors => {
+    const validate = (reference: string, account: string, type: string, category: string, amount: string, dateValue: string | null): FormErrors => {
         const errors: FormErrors = {};
+        if (!reference.trim()) errors.reference = "Reference is required";
         if (!account.trim()) errors.account = "Account is required";
         if (!type) errors.type = "Type is required";
         if (!category.trim()) errors.category = "Category is required";
@@ -49,13 +51,14 @@ export function TransactionForm({ open, onClose, onSuccess }: { open: boolean; o
     const handleSubmit: SubmitEventHandler<HTMLFormElement> = async (event) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
+        const reference = formData.get("reference") as string;
         const account = formData.get("account") as string;
         const type = formData.get("type") as string;
         const category = formData.get("category") as string;
         const amount = formData.get("amount") as string;
         const dateValue = date ? date.format("YYYY-MM-DD") : null;
 
-        const errors = validate(account, type, category, amount, dateValue);
+        const errors = validate(reference, account, type, category, amount, dateValue);
         if (Object.keys(errors).length > 0) {
             setFormErrors(errors);
             return;
@@ -63,7 +66,11 @@ export function TransactionForm({ open, onClose, onSuccess }: { open: boolean; o
         setFormErrors({});
         setIsLoading(true);
         try {
-            const response = await createTransaction(account, type, category, Number(amount), dateValue as string);
+            const response = await createTransaction(reference, account, type, category, Number(amount), dateValue as string);
+            if (response.status === 409) {
+                setFormErrors({ reference: "A transaction with this reference already exists" });
+                return;
+            }
             if (!response.ok) {
                 throw new Error("Failed to create transaction");
             }
@@ -106,6 +113,14 @@ export function TransactionForm({ open, onClose, onSuccess }: { open: boolean; o
                 )}
 
                 <Box component="form" display="flex" flexDirection="column" gap={2.5} sx={{ px: 3, pb: 3 }} onSubmit={handleSubmit}>
+                    <TextField
+                        label="Reference"
+                        variant="outlined"
+                        name="reference"
+                        error={!!formErrors.reference}
+                        helperText={formErrors.reference}
+                        onChange={(e) => e.target.value.trim() && clearFieldError("reference")}
+                    />
                     <TextField
                         label="Account"
                         variant="outlined"

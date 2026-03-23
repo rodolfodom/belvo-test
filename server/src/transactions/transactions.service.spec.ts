@@ -14,7 +14,7 @@ const mockUser: User = {
 };
 
 const mockTransaction: Transaction = {
-  reference: 1,
+  reference: 'REF001',
   account: 'BBVA',
   date: new Date('2026-03-01'),
   amount: -255,
@@ -24,6 +24,7 @@ const mockTransaction: Transaction = {
 };
 
 const createTransactionDto: CreateTransactionDto = {
+  reference: 'REF001',
   account: 'BBVA',
   amount: -255,
   type: 'outflow',
@@ -45,7 +46,7 @@ const mockQueryBuilder = {
 describe('TransactionService', () => {
   let service: TransactionService;
   let transactionRepository: jest.Mocked<
-    Pick<import('typeorm').Repository<Transaction>, 'create' | 'save' | 'find' | 'createQueryBuilder'>
+    Pick<import('typeorm').Repository<Transaction>, 'create' | 'save' | 'find' | 'findOneBy' | 'findBy' | 'createQueryBuilder'>
   >;
 
   beforeEach(async () => {
@@ -58,6 +59,8 @@ describe('TransactionService', () => {
             create: jest.fn(),
             save: jest.fn(),
             find: jest.fn(),
+            findOneBy: jest.fn(),
+            findBy: jest.fn(),
             createQueryBuilder: jest.fn(),
           },
         },
@@ -74,6 +77,7 @@ describe('TransactionService', () => {
 
   describe('create', () => {
     it('convierte el date string a un objeto Date', async () => {
+      transactionRepository.findOneBy.mockResolvedValue(null);
       transactionRepository.create.mockReturnValue(mockTransaction);
       transactionRepository.save.mockResolvedValue(mockTransaction);
 
@@ -86,6 +90,7 @@ describe('TransactionService', () => {
     });
 
     it('asigna el usuario a la transacción antes de guardar', async () => {
+      transactionRepository.findOneBy.mockResolvedValue(null);
       const partialTransaction = { ...mockTransaction, user: undefined } as any;
       transactionRepository.create.mockReturnValue(partialTransaction);
       transactionRepository.save.mockResolvedValue(mockTransaction);
@@ -98,6 +103,7 @@ describe('TransactionService', () => {
     });
 
     it('retorna la transacción guardada', async () => {
+      transactionRepository.findOneBy.mockResolvedValue(null);
       transactionRepository.create.mockReturnValue(mockTransaction);
       transactionRepository.save.mockResolvedValue(mockTransaction);
 
@@ -105,20 +111,30 @@ describe('TransactionService', () => {
 
       expect(result).toEqual(mockTransaction);
     });
+
+    it('lanza ConflictException si la referencia ya existe', async () => {
+      transactionRepository.findOneBy.mockResolvedValue(mockTransaction);
+
+      await expect(service.create(createTransactionDto, mockUser)).rejects.toThrow(
+        `Transaction with reference 'REF001' already exists`,
+      );
+      expect(transactionRepository.save).not.toHaveBeenCalled();
+    });
   });
 
   describe('createMany', () => {
     const createDtos: CreateTransactionDto[] = [
-      { account: 'BBVA', amount: -255, type: 'outflow', category: 'groceries', date: '2026-03-01' },
-      { account: 'BBVA', amount: 1000, type: 'inflow', category: 'salary', date: '2026-03-02' },
+      { reference: 'REF001', account: 'BBVA', amount: -255, type: 'outflow', category: 'groceries', date: '2026-03-01' },
+      { reference: 'REF002', account: 'BBVA', amount: 1000, type: 'inflow', category: 'salary', date: '2026-03-02' },
     ];
 
     const mockTransactions: Transaction[] = [
       { ...mockTransaction },
-      { reference: 2, account: 'BBVA', date: new Date('2026-03-02'), amount: 1000, type: 'inflow', category: 'salary', user: mockUser },
+      { reference: 'REF002', account: 'BBVA', date: new Date('2026-03-02'), amount: 1000, type: 'inflow', category: 'salary', user: mockUser },
     ];
 
     it('convierte el date string a Date en cada transacción', async () => {
+      transactionRepository.findBy.mockResolvedValue([]);
       transactionRepository.create
         .mockReturnValueOnce(mockTransactions[0])
         .mockReturnValueOnce(mockTransactions[1]);
@@ -137,6 +153,7 @@ describe('TransactionService', () => {
     });
 
     it('asigna el usuario a cada transacción antes de guardar', async () => {
+      transactionRepository.findBy.mockResolvedValue([]);
       const partial1 = { ...mockTransactions[0], user: undefined } as any;
       const partial2 = { ...mockTransactions[1], user: undefined } as any;
       transactionRepository.create
@@ -155,6 +172,7 @@ describe('TransactionService', () => {
     });
 
     it('retorna el array de transacciones guardadas', async () => {
+      transactionRepository.findBy.mockResolvedValue([]);
       transactionRepository.create
         .mockReturnValueOnce(mockTransactions[0])
         .mockReturnValueOnce(mockTransactions[1]);
@@ -166,6 +184,7 @@ describe('TransactionService', () => {
     });
 
     it('llama a save una sola vez con el array completo', async () => {
+      transactionRepository.findBy.mockResolvedValue([]);
       transactionRepository.create
         .mockReturnValueOnce(mockTransactions[0])
         .mockReturnValueOnce(mockTransactions[1]);
@@ -177,6 +196,27 @@ describe('TransactionService', () => {
       expect(transactionRepository.save).toHaveBeenCalledWith(
         expect.arrayContaining([mockTransactions[0], mockTransactions[1]]),
       );
+    });
+
+    it('lanza ConflictException si hay referencias duplicadas en el batch', async () => {
+      const dtosWithDup: CreateTransactionDto[] = [
+        { reference: 'REF001', account: 'BBVA', amount: -255, type: 'outflow', category: 'groceries', date: '2026-03-01' },
+        { reference: 'REF001', account: 'BBVA', amount: 1000, type: 'inflow', category: 'salary', date: '2026-03-02' },
+      ];
+
+      await expect(service.createMany(dtosWithDup, mockUser)).rejects.toThrow(
+        'The request contains duplicate transaction references',
+      );
+      expect(transactionRepository.save).not.toHaveBeenCalled();
+    });
+
+    it('lanza ConflictException si alguna referencia ya existe en la base de datos', async () => {
+      transactionRepository.findBy.mockResolvedValue([mockTransaction]);
+
+      await expect(service.createMany(createDtos, mockUser)).rejects.toThrow(
+        'Transactions already exist with references: REF001',
+      );
+      expect(transactionRepository.save).not.toHaveBeenCalled();
     });
   });
 

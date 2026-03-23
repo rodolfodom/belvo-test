@@ -66,6 +66,9 @@ export function IsPastOrToday(validationOptions?: ValidationOptions) {
 
 export class CreateTransactionDto {
   @IsString()
+  reference: string;
+
+  @IsString()
   account: string;
 
   @IsNumber()
