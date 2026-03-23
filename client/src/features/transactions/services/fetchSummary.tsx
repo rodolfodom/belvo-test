@@ -5,8 +5,13 @@ export interface AccountSummary {
     total_outflow: string;
 }
 
-export async function fetchSummary(): Promise<AccountSummary[]> {
-    const response = await fetch(`api/transactions/summary/by-account`, {
+export async function fetchSummary(startDate?: string, endDate?: string): Promise<AccountSummary[]> {
+    const params = new URLSearchParams();
+    if (startDate) params.set("startDate", startDate);
+    if (endDate) params.set("endDate", endDate);
+
+    const query = params.toString() ? `?${params.toString()}` : "";
+    const response = await fetch(`api/transactions/summary/by-account${query}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
