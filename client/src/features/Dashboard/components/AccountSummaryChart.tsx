@@ -62,14 +62,14 @@ export function AccountSummaryChart() {
                                 dataKey: "account",
                                 label: "Account",
                                 categoryGapRatio: 0.4,
-                                labelStyle: { fontWeight: 700, fontSize: 13, fill: "#1e3a5f" },
+                                labelStyle: { fontWeight: 700, fontSize: 15, fill: "#1e3a5f" },
                             }]}
                             yAxis={[{
                                 label: "Amount (USD)",
-                                labelStyle: { fontWeight: 700, fontSize: 13, fill: "#1e3a5f" },
+                                labelStyle: { fontWeight: 700, fontSize: 15, fill: "#1e3a5f" },
                             }]}
                             series={[
-                                { dataKey: "inflow", label: "Inflow", color: "#2563eb" },
+                                { dataKey: "inflow", label: "Inflow", color: "#16a34a" },
                                 { dataKey: "outflow", label: "Outflow", color: "#dc2626" },
                             ]}
                             height={300}
