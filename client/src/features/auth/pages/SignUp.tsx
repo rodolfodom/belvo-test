@@ -38,30 +38,34 @@ export function SignUpPage() {
 
     return (
         <ThemeProvider theme={lightTheme}>
-            {error && <Alert severity="error">{error}</Alert>}
-            <Box component="section" display="flex" flexDirection="column" gap={4} width="100%" justifyContent="center">
-                <Box display="flex" flexDirection="column" gap={0}>
-                    <Typography variant="h4" sx={{ mb: 2 }}>
-                        Sign Up
-                    </Typography>
-                    <Typography variant="h6">
-                        Create a new account to get started.
-                    </Typography>
-                </Box>
-                <Box display="flex" flexDirection="column" gap={4} width="100%">
-                    <TextField label="Full Name" type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} />
-                    <TextField label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                    <TextField label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-                    <Button disabled={isLoading} variant="contained" color="primary" onClick={handleSignUp}>
-                        Sign Up
-                    </Button>
-                </Box>
-                <Box display="flex" justifyContent="center">
-                    <Typography variant="body2">
-                        Already have an account? <Link href="/">Log In</Link>
-                    </Typography>
-                </Box>
+        <Box component="section" display="flex" flexDirection="column" gap={3} width="100%" justifyContent="center">
+            <Box display="flex" flexDirection="column" gap={0.5} sx={{ mb: 1 }}>
+                <Typography variant="h4">
+                    Create an account
+                </Typography>
+                <Typography variant="body1" color="text.secondary">
+                    Sign up to start managing your finances.
+                </Typography>
             </Box>
+
+            {error && <Alert severity="error">{error}</Alert>}
+
+            <Box display="flex" flexDirection="column" gap={2.5} width="100%">
+                <TextField label="Full Name" type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} autoComplete="name" />
+                <TextField label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+                <TextField label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
+                <Button disabled={isLoading} variant="contained" color="primary" size="large" onClick={handleSignUp}>
+                    {isLoading ? "Creating account…" : "Create account"}
+                </Button>
+            </Box>
+
+            <Box display="flex" justifyContent="center">
+                <Typography variant="body2" color="text.secondary">
+                    Already have an account?{" "}
+                    <Link href="/" underline="hover">Log In</Link>
+                </Typography>
+            </Box>
+        </Box>
         </ThemeProvider>
     )
 }

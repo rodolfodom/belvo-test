@@ -1,13 +1,17 @@
 import { Header } from "../components/Header";
 import { Outlet } from "react-router";
-import { Container } from "@mui/material";
+import { Box, Container, ThemeProvider } from "@mui/material";
+import { lightTheme } from "../../../app/theme";
+
 export function DashboardLayout() {
     return (
-        <div>
-            <Header />
-            <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-                <Outlet />
-            </Container>
-        </div>
+        <ThemeProvider theme={lightTheme}>
+            <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+                <Header />
+                <Container maxWidth="lg" sx={{ pt: 4, pb: 6 }}>
+                    <Outlet />
+                </Container>
+            </Box>
+        </ThemeProvider>
     );
 }

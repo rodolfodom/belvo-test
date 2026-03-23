@@ -1,58 +1,94 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { Box, Button, Grid, Typography } from "@mui/material";
 import { StatsCard } from "../components/StatsCard";
 import { TransactionForm } from "../components/TransactionForm";
 import TransactionsTable from "../../transactions/components/TransactionsTable";
 import { TransactionsProvider } from "../../transactions/providers/TransactionsProvider";
+import { useTransactions } from "../../transactions/hooks/useTransactions";
+import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
+import TrendingDownIcon from "@mui/icons-material/TrendingDown";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import AddIcon from "@mui/icons-material/Add";
 
-
-export function DashboardPage() {
+function DashboardContent() {
     const { name } = useAuth();
     const [isTransactionFormOpen, setIsTransactionFormOpen] = useState(false);
+    const { summary, getSummary } = useTransactions();
 
+    useEffect(() => {
+        getSummary();
+    }, []);
+
+    const formatCurrency = (value: number) =>
+        value.toLocaleString("en-US", { style: "currency", currency: "USD" });
 
     return (
-        <TransactionsProvider>
-            <Box sx={{ p: 0, display: "flex", flexDirection: "row", gap: 4, alignItems: "center", justifyContent: "space-between", }}>
-                <h1>Welcome {name}!</h1>
-                <Button variant="contained" color="primary" onClick={() => setIsTransactionFormOpen(true)}>
+        <>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 4 }}>
+                <Box>
+                    <Typography variant="h4" sx={{ mb: 0.5 }}>
+                        Welcome back, {name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                        Here's an overview of your finances.
+                    </Typography>
+                </Box>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    size="large"
+                    startIcon={<AddIcon />}
+                    onClick={() => setIsTransactionFormOpen(true)}
+                >
                     New Transaction
                 </Button>
             </Box>
+
             <TransactionForm open={isTransactionFormOpen} onClose={() => setIsTransactionFormOpen(false)} />
-            <Grid container spacing={0} sx={{
-                justifyContent: "center",
-                alignItems: "center",
-                display: "flex",
-                marginBottom: 4,
-            }}>
-                <Grid size={4} sx={{
-                    justifyContent: "center",
-                    alignItems: "center",
-                    display: "flex",
-                }}>
-                    <StatsCard title="Total Balance" footer="Last updated today" value="$12,345.67" />
+
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+                <Grid size={4}>
+                    <StatsCard
+                        title="Total Balance"
+                        value={formatCurrency(summary.balance)}
+                        footer="All accounts"
+                        icon={<AccountBalanceIcon fontSize="small" />}
+                        accentColor="#1e3a5f"
+                    />
                 </Grid>
-                <Grid size={4} sx={{
-                    justifyContent: "center",
-                    alignItems: "center",
-                    display: "flex",
-                }}>
-                    <StatsCard title="Monthly Spending" footer="This month" value="$2,345.67" />
+                <Grid size={4}>
+                    <StatsCard
+                        title="Total Inflow"
+                        value={formatCurrency(summary.totalInflow)}
+                        footer="All time"
+                        icon={<TrendingUpIcon fontSize="small" />}
+                        accentColor="#16a34a"
+                    />
                 </Grid>
-                <Grid size={4} sx={{
-                    justifyContent: "center",
-                    alignItems: "center",
-                    display: "flex",
-                }}>
-                    <StatsCard title="Monthly Income" footer="This month" value="$5,678.90" />
+                <Grid size={4}>
+                    <StatsCard
+                        title="Total Outflow"
+                        value={formatCurrency(summary.totalOutflow)}
+                        footer="All time"
+                        icon={<TrendingDownIcon fontSize="small" />}
+                        accentColor="#dc2626"
+                    />
                 </Grid>
             </Grid>
-            <Typography variant="h6" gutterBottom sx={{ marginBottom: 2 }}>
-                History
+
+            <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
+                Transaction History
             </Typography>
             <TransactionsTable />
+        </>
+    );
+}
+
+export function DashboardPage() {
+    return (
+        <TransactionsProvider>
+            <DashboardContent />
         </TransactionsProvider>
     );
 }

@@ -13,7 +13,12 @@ export function DateField({ label, value, onChange }: DateFieldProps) {
             label={label}
             value={value}
             onChange={onChange}
-            slotProps={{ textField: { name: 'date', margin: 'normal', fullWidth: true } }}
+            slotProps={{
+                textField: {
+                    name: 'date',
+                    sx: { '& .MuiOutlinedInput-root': { borderRadius: '16px', backgroundColor: '#ffffff' } },
+                },
+            }}
         />
     );
 }

@@ -1,4 +1,4 @@
-import { Box, TextField, Button, Typography, Link, ThemeProvider, Alert} from "@mui/material";
+import { Box, TextField, Button, Typography, Link, ThemeProvider, Alert, CircularProgress } from "@mui/material";
 import { lightTheme } from "../../../app/theme";
 import { useState } from "react";
 import { login } from "../services/login";
@@ -39,29 +39,65 @@ export function LoginPage() {
         }
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter" && !isLoading) handleLogin();
+    };
 
     return (
         <ThemeProvider theme={lightTheme}>
-        <Box component="section" display="flex" flexDirection="column" gap={4} width="100%" justifyContent="center">
-            {error && <Alert severity="error">{error}</Alert>}
-            <Box display="flex" flexDirection="column" gap={0}>
-                <Typography variant="h4" sx={{ mb: 2 }}>
-                    Log In
+        <Box
+            component="section"
+            display="flex"
+            flexDirection="column"
+            gap={3}
+            width="100%"
+            justifyContent="center"
+            onKeyDown={handleKeyDown}
+        >
+            <Box display="flex" flexDirection="column" gap={0.5} sx={{ mb: 1 }}>
+                <Typography variant="h4">
+                    Welcome back
                 </Typography>
-                <Typography variant="h6">
-                    Welcome back! Please enter your credentials to access your account.
+                <Typography variant="body1" color="text.secondary">
+                    Enter your credentials to access your account.
                 </Typography>
             </Box>
-            <Box display="flex" flexDirection="column" gap={4} width="100%">
-                <TextField label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                <TextField label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-                <Button variant="contained" color="primary" onClick={handleLogin} disabled={isLoading}>
-                    Log In
+
+            {error && <Alert severity="error">{error}</Alert>}
+
+            <Box display="flex" flexDirection="column" gap={2.5} width="100%">
+                <TextField
+                    label="Email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
+                />
+                <TextField
+                    label="Password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="current-password"
+                />
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleLogin}
+                    disabled={isLoading}
+                    size="large"
+                    startIcon={isLoading ? <CircularProgress size={18} color="inherit" /> : null}
+                >
+                    {isLoading ? "Signing in…" : "Sign in"}
                 </Button>
             </Box>
+
             <Box display="flex" justifyContent="center">
-                <Typography variant="body2">
-                    Don't have an account? <Link href="/signup">Sign Up</Link>
+                <Typography variant="body2" color="text.secondary">
+                    Don't have an account?{" "}
+                    <Link href="/signup" underline="hover">
+                        Sign Up
+                    </Link>
                 </Typography>
             </Box>
         </Box>

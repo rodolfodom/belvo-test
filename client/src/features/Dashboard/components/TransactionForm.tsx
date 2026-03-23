@@ -1,5 +1,5 @@
-
-import { Box, Button, TextField, Modal, MenuItem, Select, InputLabel, FormControl, Alert } from "@mui/material";
+import { Box, Button, TextField, Modal, MenuItem, Select, InputLabel, FormControl, Alert, Typography, IconButton } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import { useState } from "react";
 import type { SubmitEventHandler } from "react";
 import { Dayjs } from "dayjs";
@@ -15,7 +15,6 @@ export function TransactionForm({ open, onClose }: { open: boolean; onClose: () 
         setDate(null);
         setIsLoading(false);
         setError(null);
-
         onClose();
     };
 
@@ -45,13 +44,34 @@ export function TransactionForm({ open, onClose }: { open: boolean; onClose: () 
     };
 
     return (
-        <Modal open={open} onClose={clearAndClose} sx={{ display: "flex", alignItems: "center", justifyContent: "center",}}>
-            <Box sx={{ p: 2, bgcolor: "background.paper", borderRadius: 1, boxShadow: 24, display: "flex", flexDirection: "column", alignItems: "center", gap: 2, }}>
-                <h2>Create Transaction</h2>
-                {error && <Alert severity="error">{error}</Alert>}
-                <Box component="form" display="flex" flexDirection="column" gap={2} width="300px" onSubmit={handleSubmit}>
-                    <TextField label="Account" variant="outlined" fullWidth margin="normal" name="account"/>
-                    <FormControl fullWidth margin="normal">
+        <Modal open={open} onClose={clearAndClose} sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Box
+                sx={{
+                    bgcolor: "background.paper",
+                    borderRadius: 3,
+                    boxShadow: 24,
+                    width: 440,
+                    outline: 'none',
+                }}
+            >
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 3, pt: 3, pb: 2 }}>
+                    <Typography variant="h6" fontWeight={600}>
+                        New Transaction
+                    </Typography>
+                    <IconButton onClick={clearAndClose} size="small" sx={{ color: 'text.secondary' }}>
+                        <CloseIcon fontSize="small" />
+                    </IconButton>
+                </Box>
+
+                {error && (
+                    <Box sx={{ px: 3, pb: 1 }}>
+                        <Alert severity="error">{error}</Alert>
+                    </Box>
+                )}
+
+                <Box component="form" display="flex" flexDirection="column" gap={2.5} sx={{ px: 3, pb: 3 }} onSubmit={handleSubmit}>
+                    <TextField label="Account" variant="outlined" name="account" />
+                    <FormControl fullWidth>
                         <InputLabel id="type-label">Type</InputLabel>
                         <Select
                             labelId="type-label"
@@ -62,11 +82,11 @@ export function TransactionForm({ open, onClose }: { open: boolean; onClose: () 
                             <MenuItem value="outflow">Outflow</MenuItem>
                         </Select>
                     </FormControl>
-                    <TextField label="Category" variant="outlined" fullWidth margin="normal" name="category"/>
-                    <TextField label="Amount" variant="outlined" fullWidth margin="normal" name="amount"/>
-                    <DateField label="Date" value={date} onChange={setDate}/>
-                    <Button disabled={isLoading} variant="contained" color="primary" type="submit">
-                        Create Transaction
+                    <TextField label="Category" variant="outlined" name="category" />
+                    <TextField label="Amount" variant="outlined" name="amount" type="number" />
+                    <DateField label="Date" value={date} onChange={setDate} />
+                    <Button disabled={isLoading} variant="contained" color="primary" size="large" type="submit">
+                        {isLoading ? "Creating…" : "Create Transaction"}
                     </Button>
                 </Box>
             </Box>

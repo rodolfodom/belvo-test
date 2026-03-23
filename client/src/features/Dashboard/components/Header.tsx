@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useState } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -9,92 +9,84 @@ import Container from '@mui/material/Container';
 import Avatar from '@mui/material/Avatar';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
-import AdbIcon from '@mui/icons-material/Adb';
-
-const settings = ['Logout'];
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import { useAuth } from '../../auth/hooks/useAuth';
+import { useNavigate } from 'react-router';
 
 export function Header() {
-    const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
+    const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
+    const { name, clearAuthData } = useAuth();
+    const navigate = useNavigate();
 
     const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorElUser(event.currentTarget);
     };
 
-
     const handleCloseUserMenu = () => {
         setAnchorElUser(null);
     };
 
+    const handleLogout = () => {
+        clearAuthData();
+        navigate('/');
+    };
+
+    const initials = name
+        ? name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
+        : 'U';
+
     return (
-        <AppBar position="static">
-            <Container maxWidth="xl">
+        <AppBar
+            position="static"
+            sx={{
+                bgcolor: 'primary.main',
+                boxShadow: 'none',
+                borderBottom: '1px solid rgba(255,255,255,0.08)',
+            }}
+        >
+            <Container maxWidth="lg">
                 <Toolbar disableGutters sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
-                        <Typography
-                            variant="h6"
-                            noWrap
-                            component="a"
-                            href="#app-bar-with-responsive-menu"
-                            sx={{
-                                mr: 2,
-                                display: { xs: 'none', md: 'flex' },
-                                fontFamily: 'monospace',
-                                fontWeight: 700,
-                                letterSpacing: '.3rem',
-                                color: 'inherit',
-                                textDecoration: 'none',
-                            }}
-                        >
-                            LOGO
-                        </Typography>
-                        <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
-                        <Typography
-                            variant="h5"
-                            noWrap
-                            component="a"
-                            href="#app-bar-with-responsive-menu"
-                            sx={{
-                                mr: 2,
-                                display: { xs: 'flex', md: 'none' },
-                                flexGrow: 1,
-                                fontFamily: 'monospace',
-                                fontWeight: 700,
-                                letterSpacing: '.3rem',
-                                color: 'inherit',
-                                textDecoration: 'none',
-                            }}
-                        >
-                            LOGO
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                        <AccountBalanceWalletIcon sx={{ color: 'primary.light', fontSize: 28 }} />
+                        <Typography variant="h6" fontWeight={700} color="white" letterSpacing={0.5}>
+                            Belvo
                         </Typography>
                     </Box>
-                    <Box sx={{ flexGrow: 0 }}>
-                        <Tooltip title="Open settings">
+
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        {name && (
+                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                                {name}
+                            </Typography>
+                        )}
+                        <Tooltip title="Account settings">
                             <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                                <Avatar alt="user" src="" />
+                                <Avatar
+                                    sx={{
+                                        bgcolor: 'primary.light',
+                                        color: 'primary.main',
+                                        fontWeight: 700,
+                                        width: 36,
+                                        height: 36,
+                                        fontSize: 14,
+                                    }}
+                                >
+                                    {initials}
+                                </Avatar>
                             </IconButton>
                         </Tooltip>
                         <Menu
                             sx={{ mt: '45px' }}
-                            id="menu-appbar"
                             anchorEl={anchorElUser}
-                            anchorOrigin={{
-                                vertical: 'top',
-                                horizontal: 'right',
-                            }}
+                            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                             keepMounted
-                            transformOrigin={{
-                                vertical: 'top',
-                                horizontal: 'right',
-                            }}
+                            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                             open={Boolean(anchorElUser)}
                             onClose={handleCloseUserMenu}
                         >
-                            {settings.map((setting) => (
-                                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                                    <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
-                                </MenuItem>
-                            ))}
+                            <MenuItem onClick={handleLogout}>
+                                <Typography>Logout</Typography>
+                            </MenuItem>
                         </Menu>
                     </Box>
                 </Toolbar>
