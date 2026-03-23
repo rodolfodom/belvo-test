@@ -7,7 +7,7 @@ import { BarChart } from "@mui/x-charts/BarChart";
 import { type Dayjs } from "dayjs";
 import { fetchSummary, type AccountSummary } from "../../transactions/services/fetchSummary";
 
-export function AccountSummaryChart() {
+export function AccountSummaryChart({ refreshKey }: { refreshKey?: number }) {
     const [startDate, setStartDate] = useState<Dayjs | null>(null);
     const [endDate, setEndDate] = useState<Dayjs | null>(null);
     const [data, setData] = useState<AccountSummary[]>([]);
@@ -16,7 +16,7 @@ export function AccountSummaryChart() {
         const start = startDate?.isValid() ? startDate.format("YYYY-MM-DD") : undefined;
         const end = endDate?.isValid() ? endDate.format("YYYY-MM-DD") : undefined;
         fetchSummary(start, end).then(setData).catch(() => setData([]));
-    }, [startDate, endDate]);
+    }, [startDate, endDate, refreshKey]);
 
     const dataset = data.map((row) => ({
         account: row.account,

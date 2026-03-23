@@ -16,11 +16,19 @@ import AddIcon from "@mui/icons-material/Add";
 function DashboardContent() {
     const { name } = useAuth();
     const [isTransactionFormOpen, setIsTransactionFormOpen] = useState(false);
-    const { summary, getSummary } = useTransactions();
+    const [refreshKey, setRefreshKey] = useState(0);
+    const { summary, getSummary, getTransactions } = useTransactions();
 
     useEffect(() => {
         getSummary();
+        getTransactions();
     }, []);
+
+    const handleTransactionSuccess = () => {
+        getSummary();
+        getTransactions();
+        setRefreshKey((k) => k + 1);
+    };
 
     const formatCurrency = (value: number) =>
         value.toLocaleString("en-US", { style: "currency", currency: "USD" });
@@ -47,7 +55,7 @@ function DashboardContent() {
                 </Button>
             </Box>
 
-            <TransactionForm open={isTransactionFormOpen} onClose={() => setIsTransactionFormOpen(false)} />
+            <TransactionForm open={isTransactionFormOpen} onClose={() => setIsTransactionFormOpen(false)} onSuccess={handleTransactionSuccess} />
 
             <Grid container spacing={3} sx={{ mb: 4 }}>
                 <Grid size={4}>
@@ -79,10 +87,10 @@ function DashboardContent() {
                 </Grid>
             </Grid>
 
-            <AccountSummaryChart />
+            <AccountSummaryChart refreshKey={refreshKey} />
 
             <Box sx={{ mt: 4 }}>
-                <CategorySummaryChart />
+                <CategorySummaryChart refreshKey={refreshKey} />
             </Box>
 
             <Typography variant="h6" fontWeight={600} sx={{ mb: 2, mt: 4 }}>

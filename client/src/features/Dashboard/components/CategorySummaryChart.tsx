@@ -5,7 +5,7 @@ import { fetchSummaryByCategory } from "../../transactions/services/fetchSummary
 
 type CategoryEntry = { category: string; amount: number };
 
-export function CategorySummaryChart() {
+export function CategorySummaryChart({ refreshKey }: { refreshKey?: number }) {
     const [inflowData, setInflowData] = useState<CategoryEntry[]>([]);
     const [outflowData, setOutflowData] = useState<CategoryEntry[]>([]);
 
@@ -31,7 +31,7 @@ export function CategorySummaryChart() {
                 setInflowData([]);
                 setOutflowData([]);
             });
-    }, []);
+    }, [refreshKey]);
 
     const emptyState = (
         <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: 260 }}>
