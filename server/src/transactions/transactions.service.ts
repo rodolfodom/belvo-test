@@ -29,6 +29,25 @@ export class TransactionService {
     return this.transactionRepository.find({ where: { user } });
   }
 
+  async getSummaryByCategory(user: User): Promise<Record<string, Record<string, string>>> {
+    const rows = await this.transactionRepository
+      .createQueryBuilder('tx')
+      .select('tx.type', 'type')
+      .addSelect('tx.category', 'category')
+      .addSelect('SUM(tx.amount)', 'total')
+      .where('tx.userId = :userId', { userId: user.id })
+      .groupBy('tx.type')
+      .addGroupBy('tx.category')
+      .getRawMany<{ type: string; category: string; total: string }>();
+
+    const result: Record<string, Record<string, string>> = {};
+    for (const row of rows) {
+      if (!result[row.type]) result[row.type] = {};
+      result[row.type][row.category] = parseFloat(row.total).toFixed(2);
+    }
+    return result;
+  }
+
   async getSummaryByAccount(
     user: User,
     startDate?: string,

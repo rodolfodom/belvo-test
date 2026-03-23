@@ -36,7 +36,15 @@ export class TransactionController {
   }
 
   @UseGuards(AuthGuard)
-  @Get('summary')
+  @Get('summary/by-category')
+  async getSummaryByCategory(
+    @Request() req: { user: User },
+  ): Promise<Record<string, Record<string, string>>> {
+    return await this.service.getSummaryByCategory(req.user);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('summary/by-account')
   async getSummary(
     @Request() req: { user: User },
     @Query() query: GetSummaryDto,
