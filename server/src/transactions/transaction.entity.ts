@@ -17,7 +17,7 @@ export class Transaction {
   @Column()
   amount: number;
 
-  @Column({ type: 'text' })
+  @Column({ type: 'text', enum: ['outflow', 'inflow'] })
   type: TransactionType;
 
   @Column()
