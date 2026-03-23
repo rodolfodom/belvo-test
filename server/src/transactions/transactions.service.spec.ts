@@ -32,7 +32,7 @@ const createTransactionDto: CreateTransactionDto = {
   date: '2026-03-01',
 };
 
-// Mock reutilizable del QueryBuilder — cada método retorna this (fluent interface)
+// Reusable QueryBuilder mock — each method returns this (fluent interface)
 const mockQueryBuilder = {
   select: jest.fn().mockReturnThis(),
   addSelect: jest.fn().mockReturnThis(),
@@ -76,7 +76,7 @@ describe('TransactionService', () => {
   });
 
   describe('create', () => {
-    it('convierte el date string a un objeto Date', async () => {
+    it('converts the date string to a Date object', async () => {
       transactionRepository.findOneBy.mockResolvedValue(null);
       transactionRepository.create.mockReturnValue(mockTransaction);
       transactionRepository.save.mockResolvedValue(mockTransaction);
@@ -89,7 +89,7 @@ describe('TransactionService', () => {
       });
     });
 
-    it('asigna el usuario a la transacción antes de guardar', async () => {
+    it('assigns the user to the transaction before saving', async () => {
       transactionRepository.findOneBy.mockResolvedValue(null);
       const partialTransaction = { ...mockTransaction, user: undefined } as any;
       transactionRepository.create.mockReturnValue(partialTransaction);
@@ -102,7 +102,7 @@ describe('TransactionService', () => {
       );
     });
 
-    it('retorna la transacción guardada', async () => {
+    it('returns the saved transaction', async () => {
       transactionRepository.findOneBy.mockResolvedValue(null);
       transactionRepository.create.mockReturnValue(mockTransaction);
       transactionRepository.save.mockResolvedValue(mockTransaction);
@@ -112,7 +112,7 @@ describe('TransactionService', () => {
       expect(result).toEqual(mockTransaction);
     });
 
-    it('lanza ConflictException si la referencia ya existe', async () => {
+    it('throws ConflictException if the reference already exists', async () => {
       transactionRepository.findOneBy.mockResolvedValue(mockTransaction);
 
       await expect(service.create(createTransactionDto, mockUser)).rejects.toThrow(
@@ -133,7 +133,7 @@ describe('TransactionService', () => {
       { reference: 'REF002', account: 'BBVA', date: new Date('2026-03-02'), amount: 1000, type: 'inflow', category: 'salary', user: mockUser },
     ];
 
-    it('convierte el date string a Date en cada transacción', async () => {
+    it('converts the date string to Date in each transaction', async () => {
       transactionRepository.findBy.mockResolvedValue([]);
       transactionRepository.create
         .mockReturnValueOnce(mockTransactions[0])
@@ -152,7 +152,7 @@ describe('TransactionService', () => {
       });
     });
 
-    it('asigna el usuario a cada transacción antes de guardar', async () => {
+    it('assigns the user to each transaction before saving', async () => {
       transactionRepository.findBy.mockResolvedValue([]);
       const partial1 = { ...mockTransactions[0], user: undefined } as any;
       const partial2 = { ...mockTransactions[1], user: undefined } as any;
@@ -171,7 +171,7 @@ describe('TransactionService', () => {
       );
     });
 
-    it('retorna el array de transacciones guardadas', async () => {
+    it('returns the array of saved transactions', async () => {
       transactionRepository.findBy.mockResolvedValue([]);
       transactionRepository.create
         .mockReturnValueOnce(mockTransactions[0])
@@ -183,7 +183,7 @@ describe('TransactionService', () => {
       expect(result).toEqual(mockTransactions);
     });
 
-    it('llama a save una sola vez con el array completo', async () => {
+    it('calls save once with the full array', async () => {
       transactionRepository.findBy.mockResolvedValue([]);
       transactionRepository.create
         .mockReturnValueOnce(mockTransactions[0])
@@ -198,7 +198,7 @@ describe('TransactionService', () => {
       );
     });
 
-    it('lanza ConflictException si hay referencias duplicadas en el batch', async () => {
+    it('throws ConflictException if there are duplicate references in the batch', async () => {
       const dtosWithDup: CreateTransactionDto[] = [
         { reference: 'REF001', account: 'BBVA', amount: -255, type: 'outflow', category: 'groceries', date: '2026-03-01' },
         { reference: 'REF001', account: 'BBVA', amount: 1000, type: 'inflow', category: 'salary', date: '2026-03-02' },
@@ -210,7 +210,7 @@ describe('TransactionService', () => {
       expect(transactionRepository.save).not.toHaveBeenCalled();
     });
 
-    it('lanza ConflictException si alguna referencia ya existe en la base de datos', async () => {
+    it('throws ConflictException if any reference already exists in the database', async () => {
       transactionRepository.findBy.mockResolvedValue([mockTransaction]);
 
       await expect(service.createMany(createDtos, mockUser)).rejects.toThrow(
@@ -221,7 +221,7 @@ describe('TransactionService', () => {
   });
 
   describe('findAllByUser', () => {
-    it('retorna todas las transacciones del usuario', async () => {
+    it('returns all transactions for the user', async () => {
       transactionRepository.find.mockResolvedValue([mockTransaction]);
 
       const result = await service.findAllByUser(mockUser);
@@ -229,7 +229,7 @@ describe('TransactionService', () => {
       expect(result).toEqual([mockTransaction]);
     });
 
-    it('llama a find con el where correcto', async () => {
+    it('calls find with the correct where clause', async () => {
       transactionRepository.find.mockResolvedValue([]);
 
       await service.findAllByUser(mockUser);
@@ -239,7 +239,7 @@ describe('TransactionService', () => {
       });
     });
 
-    it('retorna array vacío cuando el usuario no tiene transacciones', async () => {
+    it('returns an empty array when the user has no transactions', async () => {
       transactionRepository.find.mockResolvedValue([]);
 
       const result = await service.findAllByUser(mockUser);
@@ -249,7 +249,7 @@ describe('TransactionService', () => {
   });
 
   describe('getSummaryByCategory', () => {
-    it('agrupa las transacciones por tipo y categoría', async () => {
+    it('groups transactions by type and category', async () => {
       mockQueryBuilder.getRawMany.mockResolvedValue([
         { type: 'outflow', category: 'groceries', total: '500' },
         { type: 'outflow', category: 'transport', total: '200' },
@@ -265,7 +265,7 @@ describe('TransactionService', () => {
       });
     });
 
-    it('formatea los totales con 2 decimales', async () => {
+    it('formats totals with 2 decimal places', async () => {
       mockQueryBuilder.getRawMany.mockResolvedValue([
         { type: 'inflow', category: 'salary', total: '1234.5' },
       ]);
@@ -276,7 +276,7 @@ describe('TransactionService', () => {
       expect(result.inflow.salary).toBe('1234.50');
     });
 
-    it('retorna objeto vacío cuando no hay transacciones', async () => {
+    it('returns an empty object when there are no transactions', async () => {
       mockQueryBuilder.getRawMany.mockResolvedValue([]);
       transactionRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
 
@@ -285,7 +285,7 @@ describe('TransactionService', () => {
       expect(result).toEqual({});
     });
 
-    it('filtra por el userId del usuario', async () => {
+    it('filters by the user userId', async () => {
       mockQueryBuilder.getRawMany.mockResolvedValue([]);
       transactionRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
 
@@ -305,7 +305,7 @@ describe('TransactionService', () => {
       },
     ];
 
-    it('retorna el resumen con valores formateados a 2 decimales', async () => {
+    it('returns the summary with values formatted to 2 decimal places', async () => {
       mockQueryBuilder.getRawMany.mockResolvedValue(mockRows);
       transactionRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
 
@@ -321,7 +321,7 @@ describe('TransactionService', () => {
       ]);
     });
 
-    it('no aplica filtro de fecha cuando no se pasan startDate ni endDate', async () => {
+    it('does not apply date filter when startDate and endDate are not provided', async () => {
       mockQueryBuilder.getRawMany.mockResolvedValue([]);
       transactionRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
 
@@ -330,7 +330,7 @@ describe('TransactionService', () => {
       expect(mockQueryBuilder.andWhere).not.toHaveBeenCalled();
     });
 
-    it('aplica filtro de startDate cuando se proporciona', async () => {
+    it('applies startDate filter when provided', async () => {
       mockQueryBuilder.getRawMany.mockResolvedValue([]);
       transactionRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
 
@@ -341,7 +341,7 @@ describe('TransactionService', () => {
       });
     });
 
-    it('aplica filtro de endDate cuando se proporciona', async () => {
+    it('applies endDate filter when provided', async () => {
       mockQueryBuilder.getRawMany.mockResolvedValue([]);
       transactionRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
 
@@ -352,7 +352,7 @@ describe('TransactionService', () => {
       });
     });
 
-    it('aplica ambos filtros cuando se proporcionan startDate y endDate', async () => {
+    it('applies both filters when startDate and endDate are provided', async () => {
       mockQueryBuilder.getRawMany.mockResolvedValue([]);
       transactionRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
 
@@ -367,7 +367,7 @@ describe('TransactionService', () => {
       });
     });
 
-    it('retorna array vacío cuando no hay transacciones', async () => {
+    it('returns an empty array when there are no transactions', async () => {
       mockQueryBuilder.getRawMany.mockResolvedValue([]);
       transactionRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
 

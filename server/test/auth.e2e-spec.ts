@@ -13,7 +13,7 @@ describe('Auth (e2e)', () => {
 
   beforeAll(async () => {
     app = await createTestApp();
-    // Crear el usuario que se usará en los tests de login
+    // Create the user to be used in login tests
     await request(app.getHttpServer()).post('/api/users').send(validUser);
   });
 
@@ -21,8 +21,8 @@ describe('Auth (e2e)', () => {
     await app.close();
   });
 
-  describe('POST /api/users (registro)', () => {
-    it('crea un usuario y retorna 201 sin password', async () => {
+  describe('POST /api/users (registration)', () => {
+    it('creates a user and returns 201 without password', async () => {
       const res = await request(app.getHttpServer()).post('/api/users').send({
         name: 'Nuevo Usuario',
         email: 'nuevo@test.com',
@@ -34,13 +34,13 @@ describe('Auth (e2e)', () => {
       expect(res.body.password).toBeUndefined();
     });
 
-    it('retorna 400 cuando faltan campos requeridos', async () => {
+    it('returns 400 when required fields are missing', async () => {
       const res = await request(app.getHttpServer()).post('/api/users').send({ name: 'Test' });
 
       expect(res.status).toBe(400);
     });
 
-    it('retorna 400 cuando el email no es válido', async () => {
+    it('returns 400 when the email is not valid', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/users')
         .send({ name: 'Test', email: 'no-es-email', password: 'Password1!' });
@@ -48,7 +48,7 @@ describe('Auth (e2e)', () => {
       expect(res.status).toBe(400);
     });
 
-    it('retorna 400 cuando la password no es fuerte', async () => {
+    it('returns 400 when the password is not strong', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/users')
         .send({ name: 'Test', email: 'test@test.com', password: '123' });
@@ -58,7 +58,7 @@ describe('Auth (e2e)', () => {
   });
 
   describe('POST /api/auth/login', () => {
-    it('retorna 200 con accessToken, name y email cuando las credenciales son válidas', async () => {
+    it('returns 200 with accessToken, name and email when credentials are valid', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/auth/login')
         .send({ email: validUser.email, password: validUser.password });
@@ -68,7 +68,7 @@ describe('Auth (e2e)', () => {
       expect(res.body.accessToken).toBeDefined();
     });
 
-    it('no incluye password en la respuesta', async () => {
+    it('does not include password in the response', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/auth/login')
         .send({ email: validUser.email, password: validUser.password });
@@ -76,7 +76,7 @@ describe('Auth (e2e)', () => {
       expect(res.body.password).toBeUndefined();
     });
 
-    it('retorna 401 cuando la password es incorrecta', async () => {
+    it('returns 401 when the password is incorrect', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/auth/login')
         .send({ email: validUser.email, password: 'WrongPassword1!' });
@@ -84,7 +84,7 @@ describe('Auth (e2e)', () => {
       expect(res.status).toBe(401);
     });
 
-    it('retorna 401 cuando el usuario no existe', async () => {
+    it('returns 401 when the user does not exist', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/auth/login')
         .send({ email: 'noexiste@test.com', password: 'Password1!' });
@@ -92,7 +92,7 @@ describe('Auth (e2e)', () => {
       expect(res.status).toBe(401);
     });
 
-    it('retorna 400 cuando faltan campos requeridos', async () => {
+    it('returns 400 when required fields are missing', async () => {
       const res = await request(app.getHttpServer()).post('/api/auth/login').send({});
 
       expect(res.status).toBe(400);

@@ -37,7 +37,7 @@ describe('Transactions (e2e)', () => {
   });
 
   describe('POST /api/transactions', () => {
-    it('crea una transacción y retorna 201', async () => {
+    it('creates a transaction and returns 201', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/transactions')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -52,7 +52,7 @@ describe('Transactions (e2e)', () => {
       });
     });
 
-    it('no incluye el usuario en la respuesta', async () => {
+    it('does not include the user in the response', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/transactions')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -61,7 +61,7 @@ describe('Transactions (e2e)', () => {
       expect(res.body.user).toBeUndefined();
     });
 
-    it('retorna 401 sin token de autenticación', async () => {
+    it('returns 401 without authentication token', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/transactions')
         .send(validTransaction);
@@ -69,7 +69,7 @@ describe('Transactions (e2e)', () => {
       expect(res.status).toBe(401);
     });
 
-    it('retorna 400 cuando amount es positivo en un outflow', async () => {
+    it('returns 400 when amount is positive in an outflow', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/transactions')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -78,7 +78,7 @@ describe('Transactions (e2e)', () => {
       expect(res.status).toBe(400);
     });
 
-    it('retorna 400 cuando el tipo no es válido', async () => {
+    it('returns 400 when the type is not valid', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/transactions')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -94,7 +94,7 @@ describe('Transactions (e2e)', () => {
       { account: 'BBVA', amount: 2000, type: 'inflow', category: 'salary', date: '2026-03-02' },
     ];
 
-    it('crea múltiples transacciones y retorna 201', async () => {
+    it('creates multiple transactions and returns 201', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/transactions/bulk')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -105,7 +105,7 @@ describe('Transactions (e2e)', () => {
       expect(res.body).toHaveLength(2);
     });
 
-    it('retorna las transacciones con los datos correctos', async () => {
+    it('returns the transactions with the correct data', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/transactions/bulk')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -115,7 +115,7 @@ describe('Transactions (e2e)', () => {
       expect(res.body[1]).toMatchObject({ account: 'BBVA', amount: 2000, type: 'inflow', category: 'salary' });
     });
 
-    it('no incluye el usuario en ninguna transacción', async () => {
+    it('does not include the user in any transaction', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/transactions/bulk')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -126,7 +126,7 @@ describe('Transactions (e2e)', () => {
       });
     });
 
-    it('retorna 401 sin token de autenticación', async () => {
+    it('returns 401 without authentication token', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/transactions/bulk')
         .send(bulkTransactions);
@@ -134,7 +134,7 @@ describe('Transactions (e2e)', () => {
       expect(res.status).toBe(401);
     });
 
-    it('retorna 400 cuando un item tiene amount positivo en outflow', async () => {
+    it('returns 400 when an item has positive amount in outflow', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/transactions/bulk')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -143,7 +143,7 @@ describe('Transactions (e2e)', () => {
       expect(res.status).toBe(400);
     });
 
-    it('retorna 400 cuando un item tiene un tipo inválido', async () => {
+    it('returns 400 when an item has an invalid type', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/transactions/bulk')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -152,7 +152,7 @@ describe('Transactions (e2e)', () => {
       expect(res.status).toBe(400);
     });
 
-    it('retorna 400 cuando el body no es un array', async () => {
+    it('returns 400 when the body is not an array', async () => {
       const res = await request(app.getHttpServer())
         .post('/api/transactions/bulk')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -163,7 +163,7 @@ describe('Transactions (e2e)', () => {
   });
 
   describe('GET /api/transactions', () => {
-    it('retorna 200 con las transacciones del usuario', async () => {
+    it('returns 200 with the user transactions', async () => {
       const res = await request(app.getHttpServer())
         .get('/api/transactions')
         .set('Authorization', `Bearer ${accessToken}`);
@@ -172,7 +172,7 @@ describe('Transactions (e2e)', () => {
       expect(Array.isArray(res.body)).toBe(true);
     });
 
-    it('no incluye el usuario en cada transacción', async () => {
+    it('does not include the user in each transaction', async () => {
       const res = await request(app.getHttpServer())
         .get('/api/transactions')
         .set('Authorization', `Bearer ${accessToken}`);
@@ -182,7 +182,7 @@ describe('Transactions (e2e)', () => {
       });
     });
 
-    it('retorna 401 sin token de autenticación', async () => {
+    it('returns 401 without authentication token', async () => {
       const res = await request(app.getHttpServer()).get('/api/transactions');
 
       expect(res.status).toBe(401);
@@ -190,7 +190,7 @@ describe('Transactions (e2e)', () => {
   });
 
   describe('GET /api/transactions/summary/by-category', () => {
-    it('retorna 200 con el resumen agrupado por tipo y categoría', async () => {
+    it('returns 200 with the summary grouped by type and category', async () => {
       const res = await request(app.getHttpServer())
         .get('/api/transactions/summary/by-category')
         .set('Authorization', `Bearer ${accessToken}`);
@@ -199,7 +199,7 @@ describe('Transactions (e2e)', () => {
       expect(typeof res.body).toBe('object');
     });
 
-    it('retorna 401 sin token de autenticación', async () => {
+    it('returns 401 without authentication token', async () => {
       const res = await request(app.getHttpServer()).get(
         '/api/transactions/summary/by-category',
       );
@@ -209,7 +209,7 @@ describe('Transactions (e2e)', () => {
   });
 
   describe('GET /api/transactions/summary/by-account', () => {
-    it('retorna 200 con el resumen por cuenta', async () => {
+    it('returns 200 with the summary by account', async () => {
       const res = await request(app.getHttpServer())
         .get('/api/transactions/summary/by-account')
         .set('Authorization', `Bearer ${accessToken}`);
@@ -218,7 +218,7 @@ describe('Transactions (e2e)', () => {
       expect(Array.isArray(res.body)).toBe(true);
     });
 
-    it('retorna 200 con filtros de fecha', async () => {
+    it('returns 200 with date filters', async () => {
       const res = await request(app.getHttpServer())
         .get('/api/transactions/summary/by-account')
         .query({ startDate: '2026-01-01', endDate: '2026-12-31' })
@@ -227,7 +227,7 @@ describe('Transactions (e2e)', () => {
       expect(res.status).toBe(200);
     });
 
-    it('retorna 401 sin token de autenticación', async () => {
+    it('returns 401 without authentication token', async () => {
       const res = await request(app.getHttpServer()).get(
         '/api/transactions/summary/by-account',
       );

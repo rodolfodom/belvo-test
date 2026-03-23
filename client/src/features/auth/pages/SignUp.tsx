@@ -51,6 +51,7 @@ export function SignUpPage() {
         ].some(Boolean);
         if (hasErrors) return;
         setIsLoading(true);
+        setErrors((prev) => ({ ...prev, api: "" }));
         try {
             const response = await signUp(email, password, fullName);
             if (response.status !== 201) {
@@ -93,7 +94,7 @@ export function SignUpPage() {
                     label="Full Name"
                     type="text"
                     value={fullName}
-                    onChange={(e) => { setFullName(e.target.value); validateField("fullName", e.target.value); }}
+                    onChange={(e) => { setFullName(e.target.value); validateField("fullName", e.target.value); setErrors((prev) => ({ ...prev, api: "" })); }}
                     autoComplete="name"
                     error={!!errors.fullName}
                     helperText={errors.fullName}
@@ -102,7 +103,7 @@ export function SignUpPage() {
                     label="Email"
                     type="email"
                     value={email}
-                    onChange={(e) => { setEmail(e.target.value); validateField("email", e.target.value); }}
+                    onChange={(e) => { setEmail(e.target.value); validateField("email", e.target.value); setErrors((prev) => ({ ...prev, api: "" })); }}
                     autoComplete="email"
                     error={!!errors.email}
                     helperText={errors.email}
@@ -111,7 +112,7 @@ export function SignUpPage() {
                     label="Password"
                     type="password"
                     value={password}
-                    onChange={(e) => { setPassword(e.target.value); validateField("password", e.target.value); }}
+                    onChange={(e) => { setPassword(e.target.value); validateField("password", e.target.value); setErrors((prev) => ({ ...prev, api: "" })); }}
                     autoComplete="new-password"
                     error={!!errors.password}
                     helperText={errors.password}

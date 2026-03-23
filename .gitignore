@@ -2,6 +2,7 @@ node_modules/
 dist/
 .env
 .env.*
+!server/.env
 coverage/
 *.log
 prisma/migrations/

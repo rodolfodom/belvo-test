@@ -47,7 +47,7 @@ describe('AuthService', () => {
   afterEach(() => jest.clearAllMocks());
 
   describe('singIn', () => {
-    it('retorna accessToken, name y email cuando las credenciales son válidas', async () => {
+    it('returns accessToken, name and email when credentials are valid', async () => {
       userService.findByEmail.mockResolvedValue(mockUser);
       hashService.compare.mockResolvedValue(true);
       jwtService.signAsync.mockResolvedValue('jwt-token-123');
@@ -61,7 +61,7 @@ describe('AuthService', () => {
       });
     });
 
-    it('llama a findByEmail con el email correcto', async () => {
+    it('calls findByEmail with the correct email', async () => {
       userService.findByEmail.mockResolvedValue(mockUser);
       hashService.compare.mockResolvedValue(true);
       jwtService.signAsync.mockResolvedValue('jwt-token-123');
@@ -71,7 +71,7 @@ describe('AuthService', () => {
       expect(userService.findByEmail).toHaveBeenCalledWith('rodolfo@test.com');
     });
 
-    it('llama a hashService.compare con la password en texto plano y el hash del usuario', async () => {
+    it('calls hashService.compare with the plain text password and the user hash', async () => {
       userService.findByEmail.mockResolvedValue(mockUser);
       hashService.compare.mockResolvedValue(true);
       jwtService.signAsync.mockResolvedValue('jwt-token-123');
@@ -81,7 +81,7 @@ describe('AuthService', () => {
       expect(hashService.compare).toHaveBeenCalledWith('plain-password', 'hashed-password');
     });
 
-    it('llama a jwtService.signAsync con el payload correcto', async () => {
+    it('calls jwtService.signAsync with the correct payload', async () => {
       userService.findByEmail.mockResolvedValue(mockUser);
       hashService.compare.mockResolvedValue(true);
       jwtService.signAsync.mockResolvedValue('jwt-token-123');
@@ -94,7 +94,7 @@ describe('AuthService', () => {
       });
     });
 
-    it('lanza UnauthorizedException cuando el usuario no existe', async () => {
+    it('throws UnauthorizedException when the user does not exist', async () => {
       userService.findByEmail.mockResolvedValue(null);
 
       await expect(service.singIn('noexiste@test.com', 'any-password')).rejects.toThrow(
@@ -102,7 +102,7 @@ describe('AuthService', () => {
       );
     });
 
-    it('lanza UnauthorizedException cuando la password es incorrecta', async () => {
+    it('throws UnauthorizedException when the password is incorrect', async () => {
       userService.findByEmail.mockResolvedValue(mockUser);
       hashService.compare.mockResolvedValue(false);
 
@@ -111,7 +111,7 @@ describe('AuthService', () => {
       );
     });
 
-    it('lanza UnauthorizedException con el mensaje correcto', async () => {
+    it('throws UnauthorizedException with the correct message', async () => {
       userService.findByEmail.mockResolvedValue(null);
 
       await expect(service.singIn('noexiste@test.com', 'any-password')).rejects.toThrow(
@@ -119,7 +119,7 @@ describe('AuthService', () => {
       );
     });
 
-    it('no llama a jwtService.signAsync cuando las credenciales son inválidas', async () => {
+    it('does not call jwtService.signAsync when credentials are invalid', async () => {
       userService.findByEmail.mockResolvedValue(mockUser);
       hashService.compare.mockResolvedValue(false);
 

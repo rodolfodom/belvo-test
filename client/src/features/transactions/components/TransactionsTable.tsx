@@ -44,6 +44,15 @@ export default function TransactionsTable() {
                     </TableRow>
                 </TableHead>
                 <TableBody>
+                    {transactions.length === 0 && (
+                        <TableRow>
+                            <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
+                                <Typography variant="body2" color="text.secondary">
+                                    No transactions yet.
+                                </Typography>
+                            </TableCell>
+                        </TableRow>
+                    )}
                     {transactions.map((transaction) => (
                         <TableRow
                             key={transaction.id}

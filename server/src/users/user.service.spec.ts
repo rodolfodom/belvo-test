@@ -51,7 +51,7 @@ describe('UserService', () => {
   afterEach(() => jest.clearAllMocks());
 
   describe('create', () => {
-    it('hashea la password antes de guardar el usuario', async () => {
+    it('hashes the password before saving the user', async () => {
       hashService.hash.mockResolvedValue('hashed-password');
       userRepository.create.mockReturnValue(mockUser);
       userRepository.save.mockResolvedValue(mockUser);
@@ -61,7 +61,7 @@ describe('UserService', () => {
       expect(hashService.hash).toHaveBeenCalledWith('PlainPassword1!');
     });
 
-    it('crea el usuario con la password hasheada, no la original', async () => {
+    it('creates the user with the hashed password, not the original', async () => {
       hashService.hash.mockResolvedValue('hashed-password');
       userRepository.create.mockReturnValue(mockUser);
       userRepository.save.mockResolvedValue(mockUser);
@@ -74,7 +74,7 @@ describe('UserService', () => {
       });
     });
 
-    it('guarda el usuario y retorna el resultado', async () => {
+    it('saves the user and returns the result', async () => {
       hashService.hash.mockResolvedValue('hashed-password');
       userRepository.create.mockReturnValue(mockUser);
       userRepository.save.mockResolvedValue(mockUser);
@@ -87,7 +87,7 @@ describe('UserService', () => {
   });
 
   describe('findByEmail', () => {
-    it('retorna el usuario cuando existe el email', async () => {
+    it('returns the user when the email exists', async () => {
       userRepository.findOne.mockResolvedValue(mockUser);
 
       const result = await service.findByEmail('rodolfo@test.com');
@@ -95,7 +95,7 @@ describe('UserService', () => {
       expect(result).toEqual(mockUser);
     });
 
-    it('llama a findOne con el where correcto', async () => {
+    it('calls findOne with the correct where clause', async () => {
       userRepository.findOne.mockResolvedValue(mockUser);
 
       await service.findByEmail('rodolfo@test.com');
@@ -105,7 +105,7 @@ describe('UserService', () => {
       });
     });
 
-    it('retorna null cuando el email no existe', async () => {
+    it('returns null when the email does not exist', async () => {
       userRepository.findOne.mockResolvedValue(null);
 
       const result = await service.findByEmail('noexiste@test.com');
@@ -115,7 +115,7 @@ describe('UserService', () => {
   });
 
   describe('findOne', () => {
-    it('retorna el usuario cuando existe el id', async () => {
+    it('returns the user when the id exists', async () => {
       userRepository.findOne.mockResolvedValue(mockUser);
 
       const result = await service.findOne(1);
@@ -123,7 +123,7 @@ describe('UserService', () => {
       expect(result).toEqual(mockUser);
     });
 
-    it('llama a findOne con el where correcto', async () => {
+    it('calls findOne with the correct where clause', async () => {
       userRepository.findOne.mockResolvedValue(mockUser);
 
       await service.findOne(1);
@@ -131,7 +131,7 @@ describe('UserService', () => {
       expect(userRepository.findOne).toHaveBeenCalledWith({ where: { id: 1 } });
     });
 
-    it('retorna null cuando el id no existe', async () => {
+    it('returns null when the id does not exist', async () => {
       userRepository.findOne.mockResolvedValue(null);
 
       const result = await service.findOne(999);

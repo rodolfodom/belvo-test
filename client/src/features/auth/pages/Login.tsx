@@ -74,14 +74,14 @@ export function LoginPage() {
                     label="Email"
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => { setEmail(e.target.value); setError(null); }}
                     autoComplete="email"
                 />
                 <TextField
                     label="Password"
                     type="password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => { setPassword(e.target.value); setError(null); }}
                     autoComplete="current-password"
                 />
                 <Button
