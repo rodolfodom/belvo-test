@@ -7,6 +7,7 @@ import TransactionsTable from "../../transactions/components/TransactionsTable";
 import { TransactionsProvider } from "../../transactions/providers/TransactionsProvider";
 import { useTransactions } from "../../transactions/hooks/useTransactions";
 import { AccountSummaryChart } from "../components/AccountSummaryChart";
+import { CategorySummaryChart } from "../components/CategorySummaryChart";
 import AccountBalanceIcon from "@mui/icons-material/AccountBalance";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
@@ -79,6 +80,10 @@ function DashboardContent() {
             </Grid>
 
             <AccountSummaryChart />
+
+            <Box sx={{ mt: 4 }}>
+                <CategorySummaryChart />
+            </Box>
 
             <Typography variant="h6" fontWeight={600} sx={{ mb: 2, mt: 4 }}>
                 Transaction History
