@@ -5,6 +5,7 @@ import type { SubmitEventHandler } from "react";
 import dayjs, { Dayjs } from "dayjs";
 import { DateField } from '../../../common/components/DateField';
 import { createTransaction } from "../../transactions/services/createTransaction";
+import { useHandleAuthError } from "../../../common/hooks/useHandleAuthError";
 
 type FormErrors = {
     reference?: string;
@@ -20,6 +21,7 @@ export function TransactionForm({ open, onClose, onSuccess }: { open: boolean; o
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [formErrors, setFormErrors] = useState<FormErrors>({});
+    const handleAuthError = useHandleAuthError();
 
     const clearAndClose = () => {
         setDate(dayjs());
@@ -67,6 +69,10 @@ export function TransactionForm({ open, onClose, onSuccess }: { open: boolean; o
         setIsLoading(true);
         try {
             const response = await createTransaction(reference, account, type, category, Number(amount), dateValue as string);
+            if (response.status === 401 || response.status === 403) {
+                handleAuthError();
+                return;
+            }
             if (response.status === 409) {
                 setFormErrors({ reference: "A transaction with this reference already exists" });
                 return;

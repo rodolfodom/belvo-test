@@ -18,5 +18,8 @@ export async function fetchSummary(startDate?: string, endDate?: string): Promis
             "Authorization": `Bearer ${localStorage.getItem("accessToken")}`,
         },
     });
+    if (response.status === 401 || response.status === 403) {
+        throw new Error("UNAUTHORIZED");
+    }
     return response.json();
 }

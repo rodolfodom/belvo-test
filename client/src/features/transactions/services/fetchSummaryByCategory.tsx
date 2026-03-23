@@ -8,5 +8,8 @@ export async function fetchSummaryByCategory(): Promise<CategorySummary> {
             "Authorization": `Bearer ${localStorage.getItem("accessToken")}`,
         },
     });
+    if (response.status === 401 || response.status === 403) {
+        throw new Error("UNAUTHORIZED");
+    }
     return response.json();
 }

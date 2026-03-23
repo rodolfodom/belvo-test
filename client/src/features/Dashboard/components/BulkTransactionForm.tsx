@@ -19,6 +19,7 @@ import { useState } from "react";
 import dayjs, { Dayjs } from "dayjs";
 import { DateField } from "../../../common/components/DateField";
 import { createTransactions } from "../../transactions/services/createTransactions";
+import { useHandleAuthError } from "../../../common/hooks/useHandleAuthError";
 
 type RowData = {
     reference: string;
@@ -75,6 +76,7 @@ export function BulkTransactionForm({
     const [rowErrors, setRowErrors] = useState<RowErrors[]>([{}]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const handleAuthError = useHandleAuthError();
 
     const clearAndClose = () => {
         setRows([emptyRow()]);
@@ -121,6 +123,10 @@ export function BulkTransactionForm({
                 date: r.date!.format("YYYY-MM-DD"),
             }));
             const response = await createTransactions(payload);
+            if (response.status === 401 || response.status === 403) {
+                handleAuthError();
+                return;
+            }
             if (response.status === 409) {
                 const body = await response.json();
                 setError(body?.message ?? "One or more transactions already exist");

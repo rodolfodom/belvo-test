@@ -3,12 +3,14 @@ import { TransactionsContext, type Summary } from "../context/TransactionsContex
 import { type Transaction } from "../types/trasaction.type";
 import { fetchTransactions } from "../services/fetchTransactions";
 import { fetchSummary } from "../services/fetchSummary";
+import { useHandleAuthError } from "../../../common/hooks/useHandleAuthError";
 
 export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [summary, setSummary] = useState<Summary>({ balance: 0, totalInflow: 0, totalOutflow: 0 });
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const handleAuthError = useHandleAuthError();
 
     const getTransactions = async () => {
         setIsLoading(true);
@@ -21,7 +23,11 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
                 date: transaction.date ? transaction.date.slice(0, 10) : '',
             }));
             setTransactions(formattedData);
-        } catch  {
+        } catch (err) {
+            if (err instanceof Error && err.message === "UNAUTHORIZED") {
+                handleAuthError();
+                return;
+            }
             setError("Failed to fetch transactions");
         } finally {
             setIsLoading(false);
@@ -40,8 +46,11 @@ export const TransactionsProvider = ({ children }: { children: ReactNode }) => {
                 { balance: 0, totalInflow: 0, totalOutflow: 0 },
             );
             setSummary(totals);
-        } catch {
-            // summary stays at defaults on error
+        } catch (err) {
+            if (err instanceof Error && err.message === "UNAUTHORIZED") {
+                handleAuthError();
+            }
+            // summary stays at defaults on other errors
         }
     };
 
