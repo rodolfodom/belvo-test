@@ -28,8 +28,7 @@ export class AmountTypeMatch implements ValidatorConstraintInterface {
   defaultMessage(args: ValidationArguments): string {
     const obj = args.object as CreateTransactionDto;
     if (obj.type === 'outflow') {
-      console.log('Holaaaaa');
-      return `Amount must be negative for outflow. ${obj.amount}`;
+      return `Amount must be negative for outflow.`;
     }
     if (obj.type === 'inflow') {
       return 'Amount must be positive for inflow. ()';

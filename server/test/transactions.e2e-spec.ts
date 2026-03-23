@@ -88,6 +88,80 @@ describe('Transactions (e2e)', () => {
     });
   });
 
+  describe('POST /api/transactions/bulk', () => {
+    const bulkTransactions = [
+      { account: 'BBVA', amount: -100, type: 'outflow', category: 'transport', date: '2026-03-01' },
+      { account: 'BBVA', amount: 2000, type: 'inflow', category: 'salary', date: '2026-03-02' },
+    ];
+
+    it('crea múltiples transacciones y retorna 201', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/transactions/bulk')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send(bulkTransactions);
+
+      expect(res.status).toBe(201);
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body).toHaveLength(2);
+    });
+
+    it('retorna las transacciones con los datos correctos', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/transactions/bulk')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send(bulkTransactions);
+
+      expect(res.body[0]).toMatchObject({ account: 'BBVA', amount: -100, type: 'outflow', category: 'transport' });
+      expect(res.body[1]).toMatchObject({ account: 'BBVA', amount: 2000, type: 'inflow', category: 'salary' });
+    });
+
+    it('no incluye el usuario en ninguna transacción', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/transactions/bulk')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send(bulkTransactions);
+
+      res.body.forEach((tx: any) => {
+        expect(tx.user).toBeUndefined();
+      });
+    });
+
+    it('retorna 401 sin token de autenticación', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/transactions/bulk')
+        .send(bulkTransactions);
+
+      expect(res.status).toBe(401);
+    });
+
+    it('retorna 400 cuando un item tiene amount positivo en outflow', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/transactions/bulk')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send([...bulkTransactions, { account: 'BBVA', amount: 100, type: 'outflow', category: 'food', date: '2026-03-01' }]);
+
+      expect(res.status).toBe(400);
+    });
+
+    it('retorna 400 cuando un item tiene un tipo inválido', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/transactions/bulk')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send([{ ...bulkTransactions[0], type: 'invalid' }]);
+
+      expect(res.status).toBe(400);
+    });
+
+    it('retorna 400 cuando el body no es un array', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/transactions/bulk')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send(validTransaction);
+
+      expect(res.status).toBe(400);
+    });
+  });
+
   describe('GET /api/transactions', () => {
     it('retorna 200 con las transacciones del usuario', async () => {
       const res = await request(app.getHttpServer())

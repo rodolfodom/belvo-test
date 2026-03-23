@@ -25,6 +25,21 @@ export class TransactionService {
     return this.transactionRepository.save(transaction);
   }
 
+  async createMany(
+    transactionsData: CreateTransactionDto[],
+    user: User,
+  ): Promise<Transaction[]> {
+    const transactions = transactionsData.map((data) => {
+      const transaction = this.transactionRepository.create({
+        ...data,
+        date: new Date(data.date),
+      });
+      transaction.user = user;
+      return transaction;
+    });
+    return this.transactionRepository.save(transactions);
+  }
+
   async findAllByUser(user: User): Promise<Transaction[]> {
     return this.transactionRepository.find({ where: { user } });
   }

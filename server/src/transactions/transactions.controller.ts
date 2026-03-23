@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  ParseArrayPipe,
   Post,
   Request,
   UseGuards,
@@ -26,6 +27,16 @@ export class TransactionController {
   ): Promise<Transaction> {
     const user: User = req.user;
     return await this.service.create(transactionData, user);
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('bulk')
+  async createMany(
+    @Body(new ParseArrayPipe({ items: CreateTransactionDto }))
+    transactionsData: CreateTransactionDto[],
+    @Request() req: { user: User },
+  ): Promise<Transaction[]> {
+    return await this.service.createMany(transactionsData, req.user);
   }
 
   @UseGuards(AuthGuard)

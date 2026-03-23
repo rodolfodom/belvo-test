@@ -3,6 +3,7 @@ import { useAuth } from "../../auth/hooks/useAuth";
 import { Box, Button, Grid, Typography } from "@mui/material";
 import { StatsCard } from "../components/StatsCard";
 import { TransactionForm } from "../components/TransactionForm";
+import { BulkTransactionForm } from "../components/BulkTransactionForm";
 import TransactionsTable from "../../transactions/components/TransactionsTable";
 import { TransactionsProvider } from "../../transactions/providers/TransactionsProvider";
 import { useTransactions } from "../../transactions/hooks/useTransactions";
@@ -16,6 +17,7 @@ import AddIcon from "@mui/icons-material/Add";
 function DashboardContent() {
     const { name } = useAuth();
     const [isTransactionFormOpen, setIsTransactionFormOpen] = useState(false);
+    const [isBulkFormOpen, setIsBulkFormOpen] = useState(false);
     const [refreshKey, setRefreshKey] = useState(0);
     const { summary, getSummary, getTransactions } = useTransactions();
 
@@ -44,18 +46,29 @@ function DashboardContent() {
                         Here's an overview of your finances.
                     </Typography>
                 </Box>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    size="large"
-                    startIcon={<AddIcon />}
-                    onClick={() => setIsTransactionFormOpen(true)}
-                >
-                    New Transaction
-                </Button>
+                <Box sx={{ display: "flex", gap: 1.5 }}>
+                    <Button
+                        variant="outlined"
+                        color="primary"
+                        size="large"
+                        onClick={() => setIsBulkFormOpen(true)}
+                    >
+                        Bulk Import
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        size="large"
+                        startIcon={<AddIcon />}
+                        onClick={() => setIsTransactionFormOpen(true)}
+                    >
+                        New Transaction
+                    </Button>
+                </Box>
             </Box>
 
             <TransactionForm open={isTransactionFormOpen} onClose={() => setIsTransactionFormOpen(false)} onSuccess={handleTransactionSuccess} />
+            <BulkTransactionForm open={isBulkFormOpen} onClose={() => setIsBulkFormOpen(false)} onSuccess={handleTransactionSuccess} />
 
             <Grid container spacing={3} sx={{ mb: 4 }}>
                 <Grid size={4}>

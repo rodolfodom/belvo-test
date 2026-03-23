@@ -107,6 +107,79 @@ describe('TransactionService', () => {
     });
   });
 
+  describe('createMany', () => {
+    const createDtos: CreateTransactionDto[] = [
+      { account: 'BBVA', amount: -255, type: 'outflow', category: 'groceries', date: '2026-03-01' },
+      { account: 'BBVA', amount: 1000, type: 'inflow', category: 'salary', date: '2026-03-02' },
+    ];
+
+    const mockTransactions: Transaction[] = [
+      { ...mockTransaction },
+      { reference: 2, account: 'BBVA', date: new Date('2026-03-02'), amount: 1000, type: 'inflow', category: 'salary', user: mockUser },
+    ];
+
+    it('convierte el date string a Date en cada transacción', async () => {
+      transactionRepository.create
+        .mockReturnValueOnce(mockTransactions[0])
+        .mockReturnValueOnce(mockTransactions[1]);
+      transactionRepository.save.mockResolvedValue(mockTransactions as any);
+
+      await service.createMany(createDtos, mockUser);
+
+      expect(transactionRepository.create).toHaveBeenNthCalledWith(1, {
+        ...createDtos[0],
+        date: new Date('2026-03-01'),
+      });
+      expect(transactionRepository.create).toHaveBeenNthCalledWith(2, {
+        ...createDtos[1],
+        date: new Date('2026-03-02'),
+      });
+    });
+
+    it('asigna el usuario a cada transacción antes de guardar', async () => {
+      const partial1 = { ...mockTransactions[0], user: undefined } as any;
+      const partial2 = { ...mockTransactions[1], user: undefined } as any;
+      transactionRepository.create
+        .mockReturnValueOnce(partial1)
+        .mockReturnValueOnce(partial2);
+      transactionRepository.save.mockResolvedValue(mockTransactions as any);
+
+      await service.createMany(createDtos, mockUser);
+
+      expect(transactionRepository.save).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({ user: mockUser }),
+          expect.objectContaining({ user: mockUser }),
+        ]),
+      );
+    });
+
+    it('retorna el array de transacciones guardadas', async () => {
+      transactionRepository.create
+        .mockReturnValueOnce(mockTransactions[0])
+        .mockReturnValueOnce(mockTransactions[1]);
+      transactionRepository.save.mockResolvedValue(mockTransactions as any);
+
+      const result = await service.createMany(createDtos, mockUser);
+
+      expect(result).toEqual(mockTransactions);
+    });
+
+    it('llama a save una sola vez con el array completo', async () => {
+      transactionRepository.create
+        .mockReturnValueOnce(mockTransactions[0])
+        .mockReturnValueOnce(mockTransactions[1]);
+      transactionRepository.save.mockResolvedValue(mockTransactions as any);
+
+      await service.createMany(createDtos, mockUser);
+
+      expect(transactionRepository.save).toHaveBeenCalledTimes(1);
+      expect(transactionRepository.save).toHaveBeenCalledWith(
+        expect.arrayContaining([mockTransactions[0], mockTransactions[1]]),
+      );
+    });
+  });
+
   describe('findAllByUser', () => {
     it('retorna todas las transacciones del usuario', async () => {
       transactionRepository.find.mockResolvedValue([mockTransaction]);

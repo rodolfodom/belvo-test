@@ -11,9 +11,10 @@ type DateFieldProps = {
     fullWidth?: boolean;
     error?: boolean;
     helperText?: string;
+    size?: 'small' | 'medium';
 };
 
-export function DateField({ label, value, onChange, onError, maxDate, fullWidth, error, helperText }: DateFieldProps) {
+export function DateField({ label, value, onChange, onError, maxDate, fullWidth, error, helperText, size }: DateFieldProps) {
     return (
         <DatePicker
             label={label}
@@ -27,6 +28,7 @@ export function DateField({ label, value, onChange, onError, maxDate, fullWidth,
                     fullWidth,
                     error,
                     helperText,
+                    size,
                     sx: { '& .MuiOutlinedInput-root': { borderRadius: '16px', backgroundColor: '#ffffff' } },
                 },
             }}
