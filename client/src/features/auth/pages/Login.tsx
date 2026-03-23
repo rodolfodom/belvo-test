@@ -14,6 +14,10 @@ export function LoginPage() {
     const { setAuthData } = useAuth();
 
     const handleLogin = async () => {
+        if (!email.trim() || !password.trim()) {
+            setError("Please fill in all fields.");
+            return;
+        }
         setIsLoading(true);
         setError(null);
         try {

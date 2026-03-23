@@ -5,6 +5,7 @@ import {
   Unique,
   OneToMany,
 } from 'typeorm';
+import { Exclude } from 'class-transformer';
 import { Transaction } from '../transactions/transaction.entity';
 
 @Entity()
@@ -19,6 +20,7 @@ export class User {
   @Column()
   email: string;
 
+  @Exclude()
   @Column()
   password: string;
 

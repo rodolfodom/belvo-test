@@ -1,4 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Exclude } from 'class-transformer';
 import { User } from '../users/user.entity';
 import type { TransactionType } from './create-transaction.dto';
 
@@ -16,12 +17,13 @@ export class Transaction {
   @Column()
   amount: number;
 
-  @Column()
+  @Column({ type: 'text' })
   type: TransactionType;
 
   @Column()
   category: string;
 
+  @Exclude()
   @ManyToOne(() => User, (user) => user.transactions, {
     nullable: false,
     onDelete: 'CASCADE',
