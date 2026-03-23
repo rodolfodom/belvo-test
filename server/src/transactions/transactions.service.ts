@@ -28,4 +28,46 @@ export class TransactionService {
   async findAllByUser(user: User): Promise<Transaction[]> {
     return this.transactionRepository.find({ where: { user } });
   }
+
+  async getSummaryByAccount(
+    user: User,
+    startDate?: string,
+    endDate?: string,
+  ): Promise<any[]> {
+    const qb = this.transactionRepository
+      .createQueryBuilder('tx')
+      .select('tx.account', 'account')
+      .addSelect('SUM(tx.amount)', 'balance')
+      .addSelect(
+        `SUM(CASE WHEN tx.type = 'inflow' THEN tx.amount ELSE 0 END)`,
+        'total_inflow',
+      )
+      .addSelect(
+        `SUM(CASE WHEN tx.type = 'outflow' THEN tx.amount ELSE 0 END)`,
+        'total_outflow',
+      )
+      .where('tx.userId = :userId', { userId: user.id })
+      .groupBy('tx.account');
+
+    if (startDate) {
+      qb.andWhere('tx.date >= :startDate', { startDate });
+    }
+    if (endDate) {
+      qb.andWhere('tx.date <= :endDate', { endDate });
+    }
+
+    const rows = await qb.getRawMany<{
+      account: string;
+      balance: string;
+      total_inflow: string;
+      total_outflow: string;
+    }>();
+
+    return rows.map((row) => ({
+      account: row.account,
+      balance: parseFloat(row.balance).toFixed(2),
+      total_inflow: parseFloat(row.total_inflow).toFixed(2),
+      total_outflow: parseFloat(row.total_outflow).toFixed(2),
+    }));
+  }
 }
