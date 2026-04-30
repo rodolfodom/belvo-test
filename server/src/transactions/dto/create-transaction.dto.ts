@@ -69,7 +69,7 @@ export class CreateTransactionDto {
   reference!: string;
 
   @IsString()
-  account!: string;
+  accountID!: string;
 
   @IsNumber()
   @Validate(AmountTypeMatch)

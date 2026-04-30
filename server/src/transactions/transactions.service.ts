@@ -4,12 +4,14 @@ import { In, Repository } from 'typeorm';
 import { Transaction } from './entities/transaction.entity';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { User } from '../users/entities/user.entity';
+import { AccountsService } from '../accounts/accounts.service';
 
 @Injectable()
 export class TransactionService {
   constructor(
     @InjectRepository(Transaction)
     private transactionRepository: Repository<Transaction>,
+    private accountsService: AccountsService,
   ) {}
 
   async create(
@@ -24,11 +26,18 @@ export class TransactionService {
         `Transaction with reference '${transactionData.reference}' already exists`,
       );
     }
+    const account = await this.accountsService.findOne(
+      transactionData.accountID,
+      user,
+    );
     const transaction = this.transactionRepository.create({
-      ...transactionData,
+      reference: transactionData.reference,
+      amount: transactionData.amount,
+      type: transactionData.type,
+      category: transactionData.category,
       date: new Date(transactionData.date),
+      account,
     });
-    transaction.user = user;
     return this.transactionRepository.save(transaction);
   }
 
@@ -51,19 +60,35 @@ export class TransactionService {
         `Transactions already exist with references: ${duplicates}`,
       );
     }
-    const transactions = transactionsData.map((data) => {
-      const transaction = this.transactionRepository.create({
-        ...data,
+
+    const uniqueAccountIDs = [
+      ...new Set(transactionsData.map((d) => d.accountID)),
+    ];
+    const accounts = await Promise.all(
+      uniqueAccountIDs.map((id) => this.accountsService.findOne(id, user)),
+    );
+    const accountMap = new Map(accounts.map((a) => [a.id, a]));
+
+    const transactions = transactionsData.map((data) =>
+      this.transactionRepository.create({
+        reference: data.reference,
+        amount: data.amount,
+        type: data.type,
+        category: data.category,
         date: new Date(data.date),
-      });
-      transaction.user = user;
-      return transaction;
-    });
+        account: accountMap.get(data.accountID)!,
+      }),
+    );
     return this.transactionRepository.save(transactions);
   }
 
   async findAllByUser(user: User): Promise<Transaction[]> {
-    return this.transactionRepository.find({ where: { user } });
+    return this.transactionRepository
+      .createQueryBuilder('tx')
+      .innerJoin('tx.account', 'account')
+      .innerJoin('account.user', 'user')
+      .where('user.id = :userId', { userId: user.id })
+      .getMany();
   }
 
   async getSummaryByCategory(
@@ -74,7 +99,9 @@ export class TransactionService {
       .select('tx.type', 'type')
       .addSelect('tx.category', 'category')
       .addSelect('SUM(tx.amount)', 'total')
-      .where('tx.userId = :userId', { userId: user.id })
+      .innerJoin('tx.account', 'account')
+      .innerJoin('account.user', 'user')
+      .where('user.id = :userId', { userId: user.id })
       .groupBy('tx.type')
       .addGroupBy('tx.category')
       .getRawMany<{ type: string; category: string; total: string }>();
@@ -94,7 +121,8 @@ export class TransactionService {
   ): Promise<any[]> {
     const qb = this.transactionRepository
       .createQueryBuilder('tx')
-      .select('tx.account', 'account')
+      .select('account.id', 'accountId')
+      .addSelect('account.name', 'accountName')
       .addSelect('SUM(tx.amount)', 'balance')
       .addSelect(
         `SUM(CASE WHEN tx.type = 'inflow' THEN tx.amount ELSE 0 END)`,
@@ -104,25 +132,26 @@ export class TransactionService {
         `SUM(CASE WHEN tx.type = 'outflow' THEN tx.amount ELSE 0 END)`,
         'total_outflow',
       )
-      .where('tx.userId = :userId', { userId: user.id })
-      .groupBy('tx.account');
+      .innerJoin('tx.account', 'account')
+      .innerJoin('account.user', 'user')
+      .where('user.id = :userId', { userId: user.id })
+      .groupBy('account.id')
+      .addGroupBy('account.name');
 
-    if (startDate) {
-      qb.andWhere('tx.date >= :startDate', { startDate });
-    }
-    if (endDate) {
-      qb.andWhere('tx.date <= :endDate', { endDate });
-    }
+    if (startDate) qb.andWhere('tx.date >= :startDate', { startDate });
+    if (endDate) qb.andWhere('tx.date <= :endDate', { endDate });
 
     const rows = await qb.getRawMany<{
-      account: string;
+      accountId: string;
+      accountName: string;
       balance: string;
       total_inflow: string;
       total_outflow: string;
     }>();
 
     return rows.map((row) => ({
-      account: row.account,
+      accountId: row.accountId,
+      accountName: row.accountName,
       balance: parseFloat(row.balance).toFixed(2),
       total_inflow: parseFloat(row.total_inflow).toFixed(2),
       total_outflow: parseFloat(row.total_outflow).toFixed(2),

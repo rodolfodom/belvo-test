@@ -6,7 +6,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
-import { Transaction } from '../../transactions/entities/transaction.entity';
+import { Account } from '../../accounts/entities/account.entity';
 
 @Entity()
 @Unique(['email'])
@@ -24,6 +24,6 @@ export class User {
   @Column()
   password!: string;
 
-  @OneToMany(() => Transaction, (transaction) => transaction.user)
-  transactions!: Transaction[];
+  @OneToMany(() => Account, (account) => account.user)
+  accounts!: Account[];
 }

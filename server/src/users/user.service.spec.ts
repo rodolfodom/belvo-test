@@ -10,7 +10,7 @@ const mockUser: User = {
   name: 'Rodolfo',
   email: 'rodolfo@test.com',
   password: 'hashed-password',
-  transactions: [],
+  accounts: [],
 };
 
 const createUserDto: CreateUserDto = {

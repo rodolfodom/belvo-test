@@ -1,31 +1,40 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { TransactionService } from './transactions.service';
-import { Transaction } from './transaction.entity';
+import { Transaction } from './entities/transaction.entity';
 import { User } from '../users/entities/user.entity';
+import { Account } from '../accounts/entities/account.entity';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { AccountsService } from '../accounts/accounts.service';
 
 const mockUser: User = {
   id: 1,
   name: 'Rodolfo',
   email: 'rodolfo@test.com',
   password: 'hashed-password',
+  accounts: [],
+};
+
+const mockAccount: Account = {
+  id: 'acc-uuid-1',
+  name: 'BBVA',
+  balance: 0,
+  user: mockUser,
   transactions: [],
 };
 
 const mockTransaction: Transaction = {
   reference: 'REF001',
-  account: 'BBVA',
   date: new Date('2026-03-01'),
   amount: -255,
   type: 'outflow',
   category: 'groceries',
-  user: mockUser,
+  account: mockAccount,
 };
 
 const createTransactionDto: CreateTransactionDto = {
   reference: 'REF001',
-  account: 'BBVA',
+  accountID: 'acc-uuid-1',
   amount: -255,
   type: 'outflow',
   category: 'groceries',
@@ -36,18 +45,24 @@ const createTransactionDto: CreateTransactionDto = {
 const mockQueryBuilder = {
   select: jest.fn().mockReturnThis(),
   addSelect: jest.fn().mockReturnThis(),
+  innerJoin: jest.fn().mockReturnThis(),
   where: jest.fn().mockReturnThis(),
   groupBy: jest.fn().mockReturnThis(),
   addGroupBy: jest.fn().mockReturnThis(),
   andWhere: jest.fn().mockReturnThis(),
+  getMany: jest.fn(),
   getRawMany: jest.fn(),
 };
 
 describe('TransactionService', () => {
   let service: TransactionService;
   let transactionRepository: jest.Mocked<
-    Pick<import('typeorm').Repository<Transaction>, 'create' | 'save' | 'find' | 'findOneBy' | 'findBy' | 'createQueryBuilder'>
+    Pick<
+      import('typeorm').Repository<Transaction>,
+      'create' | 'save' | 'findOneBy' | 'findBy' | 'createQueryBuilder'
+    >
   >;
+  let accountsService: jest.Mocked<Pick<AccountsService, 'findOne'>>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -58,17 +73,21 @@ describe('TransactionService', () => {
           useValue: {
             create: jest.fn(),
             save: jest.fn(),
-            find: jest.fn(),
             findOneBy: jest.fn(),
             findBy: jest.fn(),
             createQueryBuilder: jest.fn(),
           },
+        },
+        {
+          provide: AccountsService,
+          useValue: { findOne: jest.fn() },
         },
       ],
     }).compile();
 
     service = module.get<TransactionService>(TransactionService);
     transactionRepository = module.get(getRepositoryToken(Transaction));
+    accountsService = module.get(AccountsService);
   });
 
   afterEach(() => {
@@ -76,34 +95,41 @@ describe('TransactionService', () => {
   });
 
   describe('create', () => {
-    it('converts the date string to a Date object', async () => {
+    it('resolves the account and passes the entity to the repository', async () => {
       transactionRepository.findOneBy.mockResolvedValue(null);
+      accountsService.findOne.mockResolvedValue(mockAccount);
       transactionRepository.create.mockReturnValue(mockTransaction);
       transactionRepository.save.mockResolvedValue(mockTransaction);
 
       await service.create(createTransactionDto, mockUser);
 
+      expect(accountsService.findOne).toHaveBeenCalledWith('acc-uuid-1', mockUser);
       expect(transactionRepository.create).toHaveBeenCalledWith({
-        ...createTransactionDto,
+        reference: 'REF001',
+        amount: -255,
+        type: 'outflow',
+        category: 'groceries',
         date: new Date('2026-03-01'),
+        account: mockAccount,
       });
     });
 
-    it('assigns the user to the transaction before saving', async () => {
+    it('converts the date string to a Date object', async () => {
       transactionRepository.findOneBy.mockResolvedValue(null);
-      const partialTransaction = { ...mockTransaction, user: undefined } as any;
-      transactionRepository.create.mockReturnValue(partialTransaction);
+      accountsService.findOne.mockResolvedValue(mockAccount);
+      transactionRepository.create.mockReturnValue(mockTransaction);
       transactionRepository.save.mockResolvedValue(mockTransaction);
 
       await service.create(createTransactionDto, mockUser);
 
-      expect(transactionRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({ user: mockUser }),
+      expect(transactionRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({ date: new Date('2026-03-01') }),
       );
     });
 
     it('returns the saved transaction', async () => {
       transactionRepository.findOneBy.mockResolvedValue(null);
+      accountsService.findOne.mockResolvedValue(mockAccount);
       transactionRepository.create.mockReturnValue(mockTransaction);
       transactionRepository.save.mockResolvedValue(mockTransaction);
 
@@ -124,55 +150,66 @@ describe('TransactionService', () => {
 
   describe('createMany', () => {
     const createDtos: CreateTransactionDto[] = [
-      { reference: 'REF001', account: 'BBVA', amount: -255, type: 'outflow', category: 'groceries', date: '2026-03-01' },
-      { reference: 'REF002', account: 'BBVA', amount: 1000, type: 'inflow', category: 'salary', date: '2026-03-02' },
+      {
+        reference: 'REF001',
+        accountID: 'acc-uuid-1',
+        amount: -255,
+        type: 'outflow',
+        category: 'groceries',
+        date: '2026-03-01',
+      },
+      {
+        reference: 'REF002',
+        accountID: 'acc-uuid-1',
+        amount: 1000,
+        type: 'inflow',
+        category: 'salary',
+        date: '2026-03-02',
+      },
     ];
 
-    const mockTransactions: Transaction[] = [
-      { ...mockTransaction },
-      { reference: 'REF002', account: 'BBVA', date: new Date('2026-03-02'), amount: 1000, type: 'inflow', category: 'salary', user: mockUser },
-    ];
+    const mockTransaction2: Transaction = {
+      reference: 'REF002',
+      date: new Date('2026-03-02'),
+      amount: 1000,
+      type: 'inflow',
+      category: 'salary',
+      account: mockAccount,
+    };
 
-    it('converts the date string to Date in each transaction', async () => {
+    const mockTransactions = [mockTransaction, mockTransaction2];
+
+    it('creates transactions with the resolved account entity', async () => {
       transactionRepository.findBy.mockResolvedValue([]);
+      accountsService.findOne.mockResolvedValue(mockAccount);
       transactionRepository.create
-        .mockReturnValueOnce(mockTransactions[0])
-        .mockReturnValueOnce(mockTransactions[1]);
+        .mockReturnValueOnce(mockTransaction)
+        .mockReturnValueOnce(mockTransaction2);
       transactionRepository.save.mockResolvedValue(mockTransactions as any);
 
       await service.createMany(createDtos, mockUser);
 
       expect(transactionRepository.create).toHaveBeenNthCalledWith(1, {
-        ...createDtos[0],
+        reference: 'REF001',
+        amount: -255,
+        type: 'outflow',
+        category: 'groceries',
         date: new Date('2026-03-01'),
+        account: mockAccount,
       });
       expect(transactionRepository.create).toHaveBeenNthCalledWith(2, {
-        ...createDtos[1],
+        reference: 'REF002',
+        amount: 1000,
+        type: 'inflow',
+        category: 'salary',
         date: new Date('2026-03-02'),
+        account: mockAccount,
       });
-    });
-
-    it('assigns the user to each transaction before saving', async () => {
-      transactionRepository.findBy.mockResolvedValue([]);
-      const partial1 = { ...mockTransactions[0], user: undefined } as any;
-      const partial2 = { ...mockTransactions[1], user: undefined } as any;
-      transactionRepository.create
-        .mockReturnValueOnce(partial1)
-        .mockReturnValueOnce(partial2);
-      transactionRepository.save.mockResolvedValue(mockTransactions as any);
-
-      await service.createMany(createDtos, mockUser);
-
-      expect(transactionRepository.save).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({ user: mockUser }),
-          expect.objectContaining({ user: mockUser }),
-        ]),
-      );
     });
 
     it('returns the array of saved transactions', async () => {
       transactionRepository.findBy.mockResolvedValue([]);
+      accountsService.findOne.mockResolvedValue(mockAccount);
       transactionRepository.create
         .mockReturnValueOnce(mockTransactions[0])
         .mockReturnValueOnce(mockTransactions[1]);
@@ -185,6 +222,7 @@ describe('TransactionService', () => {
 
     it('calls save once with the full array', async () => {
       transactionRepository.findBy.mockResolvedValue([]);
+      accountsService.findOne.mockResolvedValue(mockAccount);
       transactionRepository.create
         .mockReturnValueOnce(mockTransactions[0])
         .mockReturnValueOnce(mockTransactions[1]);
@@ -200,8 +238,22 @@ describe('TransactionService', () => {
 
     it('throws ConflictException if there are duplicate references in the batch', async () => {
       const dtosWithDup: CreateTransactionDto[] = [
-        { reference: 'REF001', account: 'BBVA', amount: -255, type: 'outflow', category: 'groceries', date: '2026-03-01' },
-        { reference: 'REF001', account: 'BBVA', amount: 1000, type: 'inflow', category: 'salary', date: '2026-03-02' },
+        {
+          reference: 'REF001',
+          accountID: 'acc-uuid-1',
+          amount: -255,
+          type: 'outflow',
+          category: 'groceries',
+          date: '2026-03-01',
+        },
+        {
+          reference: 'REF001',
+          accountID: 'acc-uuid-1',
+          amount: 1000,
+          type: 'inflow',
+          category: 'salary',
+          date: '2026-03-02',
+        },
       ];
 
       await expect(service.createMany(dtosWithDup, mockUser)).rejects.toThrow(
@@ -222,25 +274,28 @@ describe('TransactionService', () => {
 
   describe('findAllByUser', () => {
     it('returns all transactions for the user', async () => {
-      transactionRepository.find.mockResolvedValue([mockTransaction]);
+      mockQueryBuilder.getMany.mockResolvedValue([mockTransaction]);
+      transactionRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
 
       const result = await service.findAllByUser(mockUser);
 
       expect(result).toEqual([mockTransaction]);
     });
 
-    it('calls find with the correct where clause', async () => {
-      transactionRepository.find.mockResolvedValue([]);
+    it('filters by user via account join', async () => {
+      mockQueryBuilder.getMany.mockResolvedValue([]);
+      transactionRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
 
       await service.findAllByUser(mockUser);
 
-      expect(transactionRepository.find).toHaveBeenCalledWith({
-        where: { user: mockUser },
-      });
+      expect(mockQueryBuilder.innerJoin).toHaveBeenCalledWith('tx.account', 'account');
+      expect(mockQueryBuilder.innerJoin).toHaveBeenCalledWith('account.user', 'user');
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith('user.id = :userId', { userId: 1 });
     });
 
     it('returns an empty array when the user has no transactions', async () => {
-      transactionRepository.find.mockResolvedValue([]);
+      mockQueryBuilder.getMany.mockResolvedValue([]);
+      transactionRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
 
       const result = await service.findAllByUser(mockUser);
 
@@ -285,20 +340,21 @@ describe('TransactionService', () => {
       expect(result).toEqual({});
     });
 
-    it('filters by the user userId', async () => {
+    it('filters by the user via account join', async () => {
       mockQueryBuilder.getRawMany.mockResolvedValue([]);
       transactionRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder as any);
 
       await service.getSummaryByCategory(mockUser);
 
-      expect(mockQueryBuilder.where).toHaveBeenCalledWith('tx.userId = :userId', { userId: 1 });
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith('user.id = :userId', { userId: 1 });
     });
   });
 
   describe('getSummaryByAccount', () => {
     const mockRows = [
       {
-        account: 'BBVA',
+        accountId: 'acc-uuid-1',
+        accountName: 'BBVA',
         balance: '2000.5',
         total_inflow: '3000',
         total_outflow: '999.5',
@@ -313,7 +369,8 @@ describe('TransactionService', () => {
 
       expect(result).toEqual([
         {
-          account: 'BBVA',
+          accountId: 'acc-uuid-1',
+          accountName: 'BBVA',
           balance: '2000.50',
           total_inflow: '3000.00',
           total_outflow: '999.50',

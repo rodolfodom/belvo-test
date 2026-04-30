@@ -10,7 +10,7 @@ const mockUser = {
   name: 'Rodolfo',
   email: 'rodolfo@test.com',
   password: 'hashed-password',
-  transactions: [],
+  accounts: [],
 };
 
 describe('AuthService', () => {

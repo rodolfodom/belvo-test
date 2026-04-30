@@ -1,15 +1,11 @@
 import { Entity, Column, PrimaryColumn, ManyToOne } from 'typeorm';
-import { Exclude } from 'class-transformer';
-import { User } from '../../users/entities/user.entity';
 import type { TransactionType } from '../dto/create-transaction.dto';
+import { Account } from '../../accounts/entities/account.entity';
 
 @Entity()
 export class Transaction {
   @PrimaryColumn()
   reference!: string;
-
-  @Column()
-  account!: string;
 
   @Column()
   date!: Date;
@@ -23,10 +19,9 @@ export class Transaction {
   @Column()
   category!: string;
 
-  @Exclude()
-  @ManyToOne(() => User, (user: User) => user.transactions, {
+  @ManyToOne(() => Account, (account: Account) => account.transactions, {
     nullable: false,
     onDelete: 'CASCADE',
   })
-  user!: User;
+  account!: Account;
 }
