@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { TransactionService } from './transactions.service';
 import { Transaction } from './transaction.entity';
-import { User } from '../users/user.entity';
-import { CreateTransactionDto } from './create-transaction.dto';
+import { User } from '../users/entities/user.entity';
+import { CreateTransactionDto } from './dto/create-transaction.dto';
 
 const mockUser: User = {
   id: 1,

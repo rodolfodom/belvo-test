@@ -66,24 +66,24 @@ export function IsPastOrToday(validationOptions?: ValidationOptions) {
 
 export class CreateTransactionDto {
   @IsString()
-  reference: string;
+  reference!: string;
 
   @IsString()
-  account: string;
+  account!: string;
 
   @IsNumber()
   @Validate(AmountTypeMatch)
-  amount: number;
+  amount!: number;
 
   @IsIn(['outflow', 'inflow'])
-  type: TransactionType;
+  type!: TransactionType;
 
   @IsString()
-  category: string;
+  category!: string;
 
   @Matches(/^\d{4}-\d{2}-\d{2}$/, {
     message: 'date must be in format YYYY-MM-DD',
   })
   @IsPastOrToday({ message: 'date must be today or in the past' })
-  date: string;
+  date!: string;
 }

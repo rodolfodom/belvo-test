@@ -6,24 +6,24 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
-import { Transaction } from '../transactions/transaction.entity';
+import { Transaction } from '../../transactions/entities/transaction.entity';
 
 @Entity()
 @Unique(['email'])
 export class User {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column()
-  name: string;
+  name!: string;
 
   @Column()
-  email: string;
+  email!: string;
 
   @Exclude()
   @Column()
-  password: string;
+  password!: string;
 
   @OneToMany(() => Transaction, (transaction) => transaction.user)
-  transactions: Transaction[];
+  transactions!: Transaction[];
 }

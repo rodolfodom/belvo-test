@@ -9,11 +9,11 @@ import {
   Query,
 } from '@nestjs/common';
 import { TransactionService } from './transactions.service';
-import { CreateTransactionDto } from './create-transaction.dto';
-import { GetSummaryDto } from './get-summary.dto';
-import { Transaction } from './transaction.entity';
+import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { GetSummaryDto } from './dto/get-summary.dto';
+import { Transaction } from './entities/transaction.entity';
 import { AuthGuard } from '../auth/auth.guard';
-import { User } from '../users/user.entity';
+import { User } from '../users/entities/user.entity';
 
 @Controller('transactions')
 export class TransactionController {

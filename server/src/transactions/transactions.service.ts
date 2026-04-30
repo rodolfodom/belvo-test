@@ -1,9 +1,9 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { Transaction } from './transaction.entity';
-import { CreateTransactionDto } from './create-transaction.dto';
-import { User } from '../users/user.entity';
+import { Transaction } from './entities/transaction.entity';
+import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class TransactionService {
