@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { Transaction } from './transaction.entity';
 import { CreateTransactionDto } from './create-transaction.dto';
-import { User } from 'src/users/user.entity';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class TransactionService {
@@ -66,7 +66,9 @@ export class TransactionService {
     return this.transactionRepository.find({ where: { user } });
   }
 
-  async getSummaryByCategory(user: User): Promise<Record<string, Record<string, string>>> {
+  async getSummaryByCategory(
+    user: User,
+  ): Promise<Record<string, Record<string, string>>> {
     const rows = await this.transactionRepository
       .createQueryBuilder('tx')
       .select('tx.type', 'type')

@@ -12,8 +12,8 @@ import { TransactionService } from './transactions.service';
 import { CreateTransactionDto } from './create-transaction.dto';
 import { GetSummaryDto } from './get-summary.dto';
 import { Transaction } from './transaction.entity';
-import { AuthGuard } from 'src/auth/auth.guard';
-import { User } from 'src/users/user.entity';
+import { AuthGuard } from '../auth/auth.guard';
+import { User } from '../users/user.entity';
 
 @Controller('transactions')
 export class TransactionController {
