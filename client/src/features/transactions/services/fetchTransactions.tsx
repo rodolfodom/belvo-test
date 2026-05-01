@@ -3,8 +3,8 @@ export async function fetchTransactions() {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("accessToken")}`,
         },
+        credentials: "include",
     });
     if (response.status === 401 || response.status === 403) {
         throw new Error("UNAUTHORIZED");

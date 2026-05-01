@@ -6,8 +6,8 @@ export async function createTransaction(reference: string, account: string, type
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("accessToken")}`,
         },
+        credentials: "include",
         body: JSON.stringify({ reference, account, type, category, amount, date }),
     });
     return response;

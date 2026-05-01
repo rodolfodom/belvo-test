@@ -6,24 +6,18 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { UserService } from '../users/user.service';
-import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(
-    private jwtService: JwtService,
-    private userService: UserService,
-  ) {}
+  constructor(private jwtService: JwtService) {}
 
-  private extractTokenFromHeader(request: Request): string | null {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : null;
+  private extractTokenFromCookie(request: Request): string | null {
+    return (request.cookies['access_token'] as string) ?? null;
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
-    const token: string | null = this.extractTokenFromHeader(request);
+    const token: string | null = this.extractTokenFromCookie(request);
     if (!token) {
       throw new UnauthorizedException('No token provided');
     }
@@ -34,12 +28,7 @@ export class AuthGuard implements CanActivate {
         sub: number;
       } = await this.jwtService.verifyAsync(token);
 
-      // Buscar usuario por id (sub) usando UserService
-      const user: User | null = await this.userService.findOne(payload.sub);
-      if (!user) {
-        throw new UnauthorizedException('Usuario no encontrado');
-      }
-      request['user'] = user; // Adjuntar usuario real
+      request['user'] = payload; // Adjuntar usuario real
       return true;
     } catch {
       throw new UnauthorizedException('Invalid token');
